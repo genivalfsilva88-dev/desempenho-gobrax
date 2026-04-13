@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZIRAN | Consumo e Desempenho Gobrax</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="gobrax-data.js"></script>
+
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #ca8a04;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 25%),
+                radial-gradient(circle at top right, rgba(248, 113, 113, 0.14), transparent 22%),
+                linear-gradient(180deg, #eef4ff 0%, #f7faff 40%, #edf3fb 100%);
+            margin: 0;
+            color: var(--text-main);
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 26px 22px 40px; }
+        .topbar-shell {
+            background: linear-gradient(180deg, #16376f 0%, #112f60 100%);
+            border-bottom: 2px solid #ff5b5b;
+            box-shadow: 0 10px 35px rgba(17, 47, 96, 0.28);
+        }
+
+        header {
+            padding: 18px 22px 14px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand-wrap { display:flex; align-items:center; gap:18px; color:#fff; }
+        .brand-logo {
+            background:#fff;
+            border-radius:14px;
+            padding:10px 14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            min-width:72px;
+            min-height:42px;
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+        }
+        .brand-copy h1 { margin:0; font-size:18px; font-weight:800; letter-spacing:-0.03em; }
+        .brand-copy p { margin:3px 0 0; font-size:11px; opacity:0.82; }
+        .header-controls { display: flex; align-items: end; justify-content:flex-end; gap: 10px; flex-wrap: wrap; }
+        .control-block { min-width: 140px; }
+        .control-label {
+            display:block;
+            color: rgba(255,255,255,0.76);
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: .08em;
+            margin-bottom: 5px;
+        }
+        .month-select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.16);
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+            outline: none;
+            cursor: pointer;
+            min-width: 140px;
+        }
+        .month-select option {
+            color: var(--text-main);
+        }
+
+        .status-pill {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .status-online { background: #dcfce7; color: #166534; }
+        .status-offline { background: #fee2e2; color: #991b1b; }
+        .status-loading { background: #fef9c3; color: #854d0e; }
+
+        .btn-upload {
+            background: rgba(255,255,255,0.08);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-upload:hover { background: rgba(255,255,255,0.15); }
+
+        .action-btn {
+            min-width: 120px;
+            justify-content: center;
+        }
+        .action-btn.red {
+            background: linear-gradient(180deg, #ff5d5d 0%, #ef3a3a 100%);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .nav-tabs {
+            display:flex;
+            gap:10px;
+            padding: 0 22px 14px;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.08);
+            color:#dce8ff;
+            padding:10px 14px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:700;
+            cursor:pointer;
+        }
+        .nav-tab.active {
+            background:#fff;
+            color:#112f60;
+            box-shadow: 0 6px 18px rgba(4, 22, 52, 0.24);
+        }
+
+        .meta-strip {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:14px;
+            flex-wrap:wrap;
+            margin-bottom:18px;
+        }
+        .meta-left, .meta-right {
+            display:flex;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        .soft-pill {
+            background: rgba(255,255,255,0.78);
+            color: #5b6c8f;
+            border: 1px solid rgba(17,47,96,0.08);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 10px 24px rgba(164, 186, 221, 0.16);
+        }
+        .month-chip {
+            border-radius:999px;
+            border: 1px solid rgba(17,47,96,0.08);
+            background:#fff;
+            color:#112f60;
+            padding:7px 12px;
+            font-size:11px;
+            font-weight:800;
+            cursor:pointer;
+        }
+        .month-chip.active { background:#dbeafe; border-color:#93c5fd; }
+        .page { display:none; }
+        .page.active { display:block; }
+        .section-title { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color:#7082a5; }
+        .section-head {
+            display:flex;
+            align-items:flex-end;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:16px;
+        }
+        .section-head h2 { margin:0; font-size:42px; line-height:1; letter-spacing:-0.05em; color:#132d58; }
+        .section-head p { margin:0; font-size:12px; color:#7c8ba8; max-width:420px; text-align:right; }
+
+        .alerts-grid {
+            display:grid;
+            gap:10px;
+            margin-bottom:18px;
+        }
+        .alert-card {
+            background: rgba(255,255,255,0.64);
+            border-radius: 14px;
+            padding: 14px 18px;
+            border: 1px solid rgba(17,47,96,0.08);
+            box-shadow: 0 16px 32px rgba(163, 181, 212, 0.14);
+            display:flex;
+            align-items:flex-start;
+            gap:12px;
+        }
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:12px;
+            font-weight:800;
+        }
+        .alert-warning .alert-icon { background:#fff7ed; color:#c2410c; }
+        .alert-danger .alert-icon { background:#fef2f2; color:#dc2626; }
+        .alert-info .alert-icon { background:#eff6ff; color:#2563eb; }
+        .alert-card strong { display:block; margin-bottom:3px; font-size:13px; }
+        .alert-card span { font-size:11px; color:#7382a1; }
+
+        .hero-grid {
+            display:grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap:14px;
+            margin-bottom:18px;
+        }
+        .hero-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(248,251,255,0.92) 100%);
+            border: 1px solid rgba(17,47,96,0.08);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 18px 38px rgba(163, 181, 212, 0.18);
+            position:relative;
+            overflow:hidden;
+        }
+        .hero-card::before {
+            content:'';
+            position:absolute;
+            inset:0 0 auto 0;
+            height:3px;
+            background: linear-gradient(90deg, #4f46e5, #ef4444, #22c55e);
+        }
+        .hero-label {
+            font-size:10px;
+            text-transform:uppercase;
+            letter-spacing:.08em;
+            color:#7b8aa8;
+            font-weight:800;
+        }
+        .hero-value { font-size:42px; line-height:1; margin:8px 0; color:#142d57; font-weight:900; letter-spacing:-0.06em; }
+        .hero-sub { font-size:12px; color:#7685a2; }
+
+        .evaluation-grid {
+            display:grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap:16px;
+            margin-bottom:18px;
+        }
+        .box.glass {
+            background: rgba(255,255,255,0.84);
+            box-shadow: 0 18px 40px rgba(163, 181, 212, 0.18);
+        }
+        .box-header small { color:#8ea0c3; font-size:10px; font-weight:700; }
+        .stat-columns {
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:12px;
+            padding:16px;
+        }
+        .stat-panel {
+            border: 1px solid rgba(17,47,96,0.1);
+            border-radius: 14px;
+            padding: 16px;
+            background: linear-gradient(180deg, rgba(247,250,255,0.8), rgba(255,255,255,0.96));
+            min-height: 156px;
+        }
+        .stat-panel h3 { margin:0 0 6px; font-size:13px; color:#6b7d9e; }
+        .stat-panel .big {
+            font-size:42px;
+            font-weight:900;
+            letter-spacing:-0.06em;
+            color:#152d57;
+            line-height:1;
+        }
+        .stat-panel .support { margin-top:6px; font-size:11px; color:#7082a4; }
+        .meter {
+            margin-top:14px;
+            height: 8px;
+            border-radius:999px;
+            background:#e6eefb;
+            overflow:hidden;
+        }
+        .meter > span {
+            display:block;
+            height:100%;
+            border-radius:999px;
+            background: linear-gradient(90deg, #2563eb, #22c55e);
+        }
+        .compare-list { padding: 8px 16px 16px; display:grid; gap:10px; }
+        .compare-item {
+            display:flex;
+            justify-content:space-between;
+            gap:12px;
+            align-items:center;
+            padding:10px 0;
+            border-bottom:1px dashed rgba(17,47,96,0.12);
+        }
+        .compare-item:last-child { border-bottom:none; }
+        .compare-item strong { display:block; font-size:13px; color:#203764; }
+        .compare-item span { font-size:11px; color:#7c8ba7; }
+        .delta-pill {
+            border-radius:999px;
+            font-size:10px;
+            font-weight:800;
+            padding:6px 10px;
+            white-space:nowrap;
+        }
+        .delta-good { background:#dcfce7; color:#15803d; }
+        .delta-bad { background:#fee2e2; color:#dc2626; }
+        .delta-neutral { background:#e2e8f0; color:#64748b; }
+
+        .mini-grid {
+            display:grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap:14px;
+            margin-bottom:18px;
+        }
+        .mini-card {
+            background: rgba(255,255,255,0.9);
+            border-radius:16px;
+            border:1px solid rgba(17,47,96,0.08);
+            box-shadow: 0 16px 32px rgba(163, 181, 212, 0.16);
+            padding:16px;
+            position:relative;
+        }
+        .mini-card::before {
+            content:'';
+            position:absolute;
+            inset:0 0 auto 0;
+            height:3px;
+            border-radius:16px 16px 0 0;
+            background: linear-gradient(90deg, #60a5fa, #f43f5e);
+        }
+        .mini-card .mini-label { font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:#7b8aa7; font-weight:800; }
+        .mini-card .mini-value { font-size:28px; font-weight:900; color:#16305d; margin-top:6px; letter-spacing:-0.04em; }
+        .mini-card .mini-sub { font-size:11px; color:#7d8ba8; margin-top:4px; }
+
+        .charts-grid-2 {
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:16px;
+            margin-bottom:18px;
+        }
+        .charts-grid-1 {
+            display:grid;
+            grid-template-columns: 1fr;
+            gap:16px;
+            margin-bottom:18px;
+        }
+        .chart-box {
+            background: rgba(255,255,255,0.88);
+            border-radius:18px;
+            border:1px solid rgba(17,47,96,0.08);
+            box-shadow: 0 18px 40px rgba(163, 181, 212, 0.18);
+            overflow:hidden;
+        }
+        .chart-head {
+            display:flex;
+            justify-content:space-between;
+            gap:12px;
+            align-items:flex-start;
+            padding:16px 18px 0;
+        }
+        .chart-head strong { font-size:14px; color:#16305d; }
+        .chart-head span { font-size:11px; color:#8a99b4; }
+        .chart-body { padding: 10px 16px 16px; height: 280px; }
+        .chart-body.tall { height: 320px; }
+        .page-note { font-size:11px; color:#8797b4; text-align:center; padding-top:8px; }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .card-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 5px 0 0 0;
+        }
+        .card-sub {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .comp-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .comp-up { background: #dcfce7; color: var(--success); }
+        .comp-down { background: #fee2e2; color: var(--danger); }
+        .comp-neutral { background: #f1f5f9; color: var(--text-muted); }
+
+        .card-spotlight { border-left: 5px solid transparent; }
+        .spotlight-good { border-left-color: var(--success); background: #f0fdf4; }
+        .spotlight-warn { border-left-color: var(--warning); background: #fefce8; }
+        .spotlight-bad { border-left-color: var(--danger); background: #fef2f2; }
+
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px; }
+        .grid-split { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px; }
+
+        .box {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .box-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .box-actions { display: flex; align-items: center; gap: 10px; }
+        .btn-ghost {
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .btn-ghost:hover { background: var(--primary-light); }
+
+        body.no-scroll { overflow: hidden; }
+        .box.is-expanded {
+            position: fixed;
+            inset: 18px;
+            z-index: 9999;
+            max-width: none;
+            max-height: none;
+            border-radius: 18px;
+            box-shadow: 0 18px 60px rgba(2, 6, 23, 0.25);
+        }
+        .box.is-expanded .table-wrap { max-height: calc(100vh - 140px); }
+        .expand-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.35);
+            backdrop-filter: blur(2px);
+            z-index: 9998;
+            display: none;
+        }
+        .expand-backdrop.show { display: block; }
+
+        .table-wrap { overflow-x: auto; max-height: 500px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #475569;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .progress-bg {
+            background: #e2e8f0;
+            height: 6px;
+            width: 70px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .progress-bar { height: 100%; border-radius: 3px; }
+        .bar-green { background: var(--success); }
+        .bar-yellow { background: var(--warning); }
+        .bar-red { background: var(--danger); }
+
+        @media (max-width: 1024px) {
+            .grid-split, .chart-grid, .hero-grid, .evaluation-grid, .mini-grid, .charts-grid-2 { grid-template-columns: 1fr; }
+            .section-head { align-items:flex-start; }
+            .section-head p { text-align:left; max-width:none; }
+        }
+
+        @media (max-width: 640px) {
+            .box.is-expanded { inset: 0; border-radius: 0; }
+            .box.is-expanded .table-wrap { max-height: calc(100vh - 130px); }
+            .container { padding: 18px 14px 32px; }
+            header { padding: 18px 14px 12px; }
+            .nav-tabs { padding: 0 14px 14px; }
+            .hero-value { font-size:32px; }
+            .section-head h2 { font-size:30px; }
+            .stat-columns { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="expand-backdrop" class="expand-backdrop" onclick="toggleDetalhamento(false)"></div>
+
+<div class="topbar-shell">
+    <header class="container" style="padding-bottom:12px;">
+        <div class="brand-wrap">
+            <div class="brand-logo">
+                <img src="Logo Ziran.jpg" alt="ZIRAN" style="height:26px;" onerror="this.style.display='none'; document.getElementById('txt-logo').style.display='block'">
+                <strong id="txt-logo" style="display:none; color:#d32f2f;">ZIRAN</strong>
+            </div>
+            <div class="brand-copy">
+                <h1>Ziran Logistica e transporte</h1>
+                <p>Painel de desempenho da frota | Fase 1: analise de caminhoes</p>
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <div class="control-block">
+                <label class="control-label" for="month-filter">Mes</label>
+                <select id="month-filter" class="month-select" onchange="aplicarFiltro()">
+                    <option value="all">Carregando...</option>
+                </select>
+            </div>
+            <div class="control-block">
+                <label class="control-label" for="group-filter">Grupo</label>
+                <select id="group-filter" class="month-select" onchange="aplicarFiltro()">
+                    <option value="all">Todos os grupos</option>
+                </select>
+            </div>
+            <div class="control-block">
+                <label class="control-label" for="vehicle-filter">Equipamento</label>
+                <select id="vehicle-filter" class="month-select" onchange="aplicarFiltro()">
+                    <option value="all">Todos os equipamentos</option>
+                </select>
+            </div>
+            <div class="control-block" style="min-width:120px;">
+                <label class="control-label">&nbsp;</label>
+                <button class="btn-upload action-btn" type="button" onclick="carregarDadosOnline()">Atualizar</button>
+            </div>
+            <label class="btn-upload action-btn">
+                CSV/XLS
+                <input type="file" id="csv-input" accept=".csv,.xls,.xlsx" style="display:none;">
+            </label>
+            <button class="btn-upload action-btn" type="button" onclick="gerarPDFDetalhamento()">Relatorio</button>
+            <button class="btn-upload action-btn red" type="button" onclick="gerarPDFDetalhamento()">Exportar PDF</button>
+        </div>
+    </header>
+
+    <div class="nav-tabs container" style="padding-top:0;">
+        <button class="nav-tab active" data-page="executivo" type="button" onclick="setActivePage('executivo', this)">Dashboard executivo</button>
+        <button class="nav-tab" data-page="operacional" type="button" onclick="setActivePage('operacional', this)">Analise operacional</button>
+        <button class="nav-tab" data-page="detalhamento" type="button" onclick="setActivePage('detalhamento', this)">Detalhamento da frota</button>
+    </div>
+</div>
+
+<main class="container">
+    <div class="meta-strip">
+        <div class="meta-left">
+            <div id="status-display" class="soft-pill">Carregando planilha...</div>
+            <div class="soft-pill" id="last-update-pill">Atualizando base</div>
+        </div>
+        <div class="meta-right">
+            <div id="month-chip-list" class="meta-right"></div>
+            <div class="soft-pill" id="period-summary-pill">Periodo: consolidado</div>
+        </div>
+    </div>
+
+    <section id="page-executivo" class="page active">
+        <div class="section-head">
+            <div>
+                <div class="section-title">Pagina 1</div>
+                <h2>Dashboard executivo</h2>
+            </div>
+            <p>Visao consolidada dos equipamentos, com foco em consumo, disciplina operacional e riscos de condução da frota.</p>
+        </div>
+
+        <div class="alerts-grid">
+            <div class="alert-card alert-warning">
+                <div class="alert-icon">!</div>
+                <div><strong id="alert-1-title">Aguardando dados</strong><span id="alert-1-text">Assim que a base carregar os alertas executivos serao calculados.</span></div>
+            </div>
+            <div class="alert-card alert-info">
+                <div class="alert-icon">i</div>
+                <div><strong id="alert-2-title">Aguardando dados</strong><span id="alert-2-text">Carregando indicadores operacionais.</span></div>
+            </div>
+            <div class="alert-card alert-danger">
+                <div class="alert-icon">!</div>
+                <div><strong id="alert-3-title">Aguardando dados</strong><span id="alert-3-text">Nenhum risco calculado ate o momento.</span></div>
+            </div>
+            <div class="alert-card alert-warning">
+                <div class="alert-icon">i</div>
+                <div><strong id="alert-4-title">Aguardando dados</strong><span id="alert-4-text">Base em processamento.</span></div>
+            </div>
+        </div>
+
+        <div class="hero-grid">
+            <div class="hero-card">
+                <div class="hero-label">Risco operacional</div>
+                <div class="hero-value" id="hero-idle">0%</div>
+                <div class="hero-sub" id="hero-idle-sub">Marcha lenta media da frota</div>
+            </div>
+            <div class="hero-card">
+                <div class="hero-label">Oportunidade</div>
+                <div class="hero-value" id="hero-opportunity">0</div>
+                <div class="hero-sub" id="hero-opportunity-sub">Equipamentos abaixo do padrao operacional</div>
+            </div>
+            <div class="hero-card">
+                <div class="hero-label">Projecao</div>
+                <div class="hero-value" id="hero-efficiency">0,00 km/l</div>
+                <div class="hero-sub" id="hero-efficiency-sub">Eficiencia media da frota no periodo</div>
+            </div>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="card"><div class="card-label">Frota analisada</div><div class="card-value" id="kpi-active">0</div><div class="card-sub" id="kpi-active-sub">Equipamentos com leitura</div></div>
+            <div class="card"><div class="card-label">Consumo medio</div><div class="card-value" id="kpi-eficiencia">0.00</div><div id="comp-eficiencia" class="comp-badge comp-neutral" style="display:none"></div><div class="card-sub">KM/L no periodo filtrado</div></div>
+            <div class="card"><div class="card-label">Distancia media</div><div class="card-value" id="kpi-dist-media">0 km</div><div class="card-sub" id="kpi-dist-media-sub">Por equipamento</div></div>
+            <div class="card"><div class="card-label">Total KM rodado</div><div class="card-value" id="kpi-km">0 km</div><div class="card-sub" id="kpi-km-sub">No periodo selecionado</div></div>
+            <div class="card"><div class="card-label">Consumo total</div><div class="card-value" id="kpi-consumo">0 L</div><div id="comp-consumo" class="comp-badge comp-neutral" style="display:none"></div><div class="card-sub">Diesel consumido</div></div>
+            <div class="card"><div class="card-label">Nota media</div><div class="card-value" id="kpi-nota">0.0</div><div id="comp-nota" class="comp-badge comp-neutral" style="display:none"></div><div class="card-sub">Indice geral da frota</div></div>
+        </div>
+
+        <div class="evaluation-grid">
+            <div class="box glass">
+                <div class="box-header">Avaliacao geral da frota <small>Leitura consolidada por equipamento</small></div>
+                <div class="stat-columns">
+                    <div class="stat-panel">
+                        <h3>Nota media operacional</h3>
+                        <div class="big" id="eval-grade">0,0</div>
+                        <div class="support" id="eval-grade-sub">Sem base comparativa</div>
+                    </div>
+                    <div class="stat-panel">
+                        <h3>Faixa verde x marcha lenta</h3>
+                        <div style="display:flex; justify-content:space-between; gap:12px;">
+                            <div>
+                                <div class="card-label" style="font-size:9px;">Faixa verde</div>
+                                <div style="font-size:26px; font-weight:900; color:#16305d;" id="kpi-faixa">0,0%</div>
+                            </div>
+                            <div>
+                                <div class="card-label" style="font-size:9px;">Marcha lenta</div>
+                                <div style="font-size:26px; font-weight:900; color:#16305d;" id="kpi-idle">0,0%</div>
+                            </div>
+                        </div>
+                        <div class="meter"><span id="faixa-meter" style="width:0%"></span></div>
+                        <div class="support" id="kpi-faixa-msg">Sem leitura suficiente</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box glass">
+                <div class="box-header">Visao comparativa <small id="compare-period-label">Atual vs periodo anterior</small></div>
+                <div class="compare-list">
+                    <div class="compare-item">
+                        <div><strong>Consumo medio</strong><span id="compare-eff-text">Aguardando dados</span></div>
+                        <div id="compare-eff-pill" class="delta-pill delta-neutral">Estavel</div>
+                    </div>
+                    <div class="compare-item">
+                        <div><strong>Nota media</strong><span id="compare-score-text">Aguardando dados</span></div>
+                        <div id="compare-score-pill" class="delta-pill delta-neutral">Estavel</div>
+                    </div>
+                    <div class="compare-item">
+                        <div><strong>Faixa verde</strong><span id="compare-faixa-text">Aguardando dados</span></div>
+                        <div id="compare-faixa-pill" class="delta-pill delta-neutral">Estavel</div>
+                    </div>
+                    <div class="compare-item">
+                        <div><strong>Excesso de velocidade</strong><span id="compare-excesso-text">Aguardando dados</span></div>
+                        <div id="compare-excesso-pill" class="delta-pill delta-neutral">Estavel</div>
+                    </div>
+                    <div class="compare-item">
+                        <div><strong>KM total rodado</strong><span id="compare-km-text">Aguardando dados</span></div>
+                        <div id="compare-km-pill" class="delta-pill delta-neutral">Estavel</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mini-grid">
+            <div class="mini-card"><div class="mini-label">Meta atingida</div><div class="mini-value" id="mini-meta">0%</div><div class="mini-sub">Equipamentos fora da zona critica</div></div>
+            <div class="mini-card"><div class="mini-label">Potencial de melhoria</div><div class="mini-value" id="mini-critical">0</div><div class="mini-sub">Equipamentos criticos no filtro</div></div>
+            <div class="mini-card"><div class="mini-label">Marcha lenta</div><div class="mini-value" id="mini-idle-hours">0h</div><div class="mini-sub">Tempo acumulado em marcha lenta</div></div>
+            <div class="mini-card"><div class="mini-label">Excesso vel.</div><div class="mini-value" id="kpi-excesso">0,0%</div><div class="mini-sub" id="kpi-excesso-horas">0h em excesso</div></div>
+        </div>
+    </section>
+
+    <section id="page-operacional" class="page">
+        <div class="section-head">
+            <div>
+                <div class="section-title">Pagina 2</div>
+                <h2>Analise operacional</h2>
+            </div>
+            <p>Comportamento dos equipamentos, ranking de consumo e distribuicao das notas da frota filtrada.</p>
+        </div>
+
+        <div class="mini-grid">
+            <div class="mini-card"><div class="mini-label">Marcha lenta</div><div class="mini-value" id="ops-idle">0,0%</div><div class="mini-sub">Media percentual do mes</div></div>
+            <div class="mini-card"><div class="mini-label">Inercia operacional</div><div class="mini-value" id="ops-faixa">0,0%</div><div class="mini-sub">Faixa verde da frota</div></div>
+            <div class="mini-card"><div class="mini-label">Excesso de velocidade</div><div class="mini-value" id="ops-excesso">0,0%</div><div class="mini-sub">Incidencia por tempo em movimento</div></div>
+            <div class="mini-card"><div class="mini-label">Nota critica</div><div class="mini-value" id="ops-criticos">0</div><div class="mini-sub">Equipamentos abaixo de 60 pontos</div></div>
+        </div>
+
+        <div class="charts-grid-2">
+            <div class="chart-box">
+                <div class="chart-head"><strong>Top 10 equipamentos por eficiencia</strong><span id="ops-top-label">Melhores equipamentos no filtro</span></div>
+                <div class="chart-body"><canvas id="chartTopVehicles"></canvas></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-head"><strong>10 equipamentos com menor eficiencia</strong><span id="ops-bottom-label">Foco para acao imediata</span></div>
+                <div class="chart-body"><canvas id="chartBottomVehicles"></canvas></div>
+            </div>
+        </div>
+
+        <div class="charts-grid-1">
+            <div class="chart-box">
+                <div class="chart-head"><strong>Distribuicao A-E da frota</strong><span id="ops-dist-label">Classificacao por nota operacional</span></div>
+                <div class="chart-body tall"><canvas id="chartDistribution"></canvas></div>
+            </div>
+        </div>
+
+        <div class="charts-grid-2">
+            <div class="box glass">
+                <div class="box-header">Equipamentos que precisam de atencao <small>Priorizacao por nota, excesso e marcha lenta</small></div>
+                <div class="table-wrap" style="padding:12px 16px 16px;">
+                    <table id="table-attention">
+                        <thead>
+                            <tr><th>Equipamento</th><th>Resumo</th><th>Acao</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-head"><strong>Desempenho por grupo</strong><span id="ops-group-label">Leitura por operacao</span></div>
+                <div class="chart-body"><canvas id="chartGroups"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="page-detalhamento" class="page">
+        <div class="section-head">
+            <div>
+                <div class="section-title">Pagina 3</div>
+                <h2>Detalhamento da frota</h2>
+            </div>
+            <p>Leitura detalhada por equipamento para auditoria, tratativa e acompanhamento fino da operacao.</p>
+        </div>
+
+        <div class="charts-grid-2">
+            <div class="chart-box">
+                <div class="chart-head"><strong>Maiores impactos de marcha lenta</strong><span id="detail-impact-label">Horas acumuladas por equipamento</span></div>
+                <div class="chart-body"><canvas id="chartIdleImpact"></canvas></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-head"><strong>Tendencia mensal da frota</strong><span id="detail-trend-label">Eficiencia e nota por mes</span></div>
+                <div class="chart-body"><canvas id="chartTrend"></canvas></div>
+            </div>
+        </div>
+
+        <div class="box glass" id="box-detalhamento">
+            <div class="box-header">
+                <span>Relatorio detalhado da frota</span>
+                <div class="box-actions">
+                    <button id="btn-pdf-detalhamento" class="btn-ghost" type="button" onclick="gerarPDFDetalhamento()">PDF</button>
+                    <button id="btn-expand-detalhamento" class="btn-ghost" type="button" onclick="toggleDetalhamento()">Expandir</button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table id="table-main">
+                    <thead>
+                        <tr>
+                            <th>Equip.</th>
+                            <th>Placa</th>
+                            <th>Modelo</th>
+                            <th>Grupo</th>
+                            <th>KM</th>
+                            <th>Consumo</th>
+                            <th>KM/L</th>
+                            <th>Nota</th>
+                            <th>Faixa</th>
+                            <th>Marcha lenta</th>
+                            <th>Excesso vel.</th>
+                            <th>Freadas/100</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="page-note">Painel focado na analise de caminhoes. A camada de motoristas sera adicionada na proxima etapa.</div>
+    </section>
+</main>
+
+<script>
+    const SPREADSHEET_ID = '1Jh08X0rCtI5rx82Teu4HRnXofHG2CTwGhpCAfKj9sDY';
+    const SHEET_CONFIG = [
+        { name: 'Marco', sourceName: 'Março', gid: '1685318905', order: 3 },
+        { name: 'Abril', sourceName: 'Abril', gid: '641346232', order: 4 },
+        { name: 'Maio', sourceName: 'Maio', gid: '322757605', order: 5 },
+        { name: 'Junho', sourceName: 'Junho', gid: '706345560', order: 6 },
+        { name: 'Julho', sourceName: 'Julho', gid: '1415754015', order: 7 },
+        { name: 'Agosto', sourceName: 'Agosto', gid: '919511949', order: 8 },
+        { name: 'Setembro', sourceName: 'Setembro', gid: '801949435', order: 9 },
+        { name: 'Outubro', sourceName: 'Outubro', gid: '330406732', order: 10 },
+        { name: 'Novembro', sourceName: 'Novembro', gid: '1146622031', order: 11 },
+        { name: 'Dezembro', sourceName: 'Dezembro', gid: '1324616894', order: 12 }
+    ];
+
+    const CONNECTION_METHODS = [
+        '',
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url='
+    ];
+
+    const STATUS_RULES = {
+        elite: { label: 'Elite', color: 'var(--success)' },
+        bom: { label: 'Bom', color: 'var(--primary)' },
+        atencao: { label: 'Atencao', color: 'var(--danger)' },
+        semUso: { label: 'Sem uso', color: 'var(--text-muted)' }
+    };
+
+    let GLOBAL_DATA = [];
+    let PERIODS_LIST = [];
+    let chartTrend = null;
+    let chartGroups = null;
+    let chartTopVehicles = null;
+    let chartBottomVehicles = null;
+    let chartDistribution = null;
+    let chartIdleImpact = null;
+    let DETALHE_EXPANDIDO = false;
+    let ACTIVE_PAGE = 'executivo';
+
+    function setActivePage(page, button) {
+        ACTIVE_PAGE = page;
+        document.querySelectorAll('.page').forEach((section) => {
+            section.classList.toggle('active', section.id === `page-${page}`);
+        });
+        document.querySelectorAll('.nav-tab').forEach((tab) => tab.classList.remove('active'));
+        if (button) button.classList.add('active');
+    }
+
+    function toggleDetalhamento(force) {
+        const box = document.getElementById('box-detalhamento');
+        const btn = document.getElementById('btn-expand-detalhamento');
+        const backdrop = document.getElementById('expand-backdrop');
+        const next = typeof force === 'boolean' ? force : !DETALHE_EXPANDIDO;
+        DETALHE_EXPANDIDO = next;
+
+        if (next) {
+            box.classList.add('is-expanded');
+            document.body.classList.add('no-scroll');
+            backdrop.classList.add('show');
+            btn.textContent = 'Fechar';
+        } else {
+            box.classList.remove('is-expanded');
+            document.body.classList.remove('no-scroll');
+            backdrop.classList.remove('show');
+            btn.textContent = 'Expandir';
+        }
+    }
+
+    async function gerarPDFDetalhamento() {
+        try {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                alert('Biblioteca de PDF indisponivel.');
+                return;
+            }
+
+            const table = document.getElementById('table-main');
+            const rows = Array.from(table.querySelectorAll('tbody tr')).map((tr) =>
+                Array.from(tr.querySelectorAll('td')).map((td) => td.innerText.replace(/\s+/g, ' ').trim())
+            );
+            if (!rows.length) {
+                alert('Sem dados para exportar.');
+                return;
+            }
+
+            const headers = Array.from(table.querySelectorAll('thead th')).map((th) => th.innerText.trim());
+            const periodo = document.getElementById('month-filter').value || 'Consolidado';
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text('Relatorio - Detalhamento operacional Gobrax', 14, 12);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Periodo: ${periodo}   |   Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 18);
+
+            const idxNota = headers.findIndex((h) => /NOTA/i.test(h));
+            const idxFaixa = headers.findIndex((h) => /FAIXA/i.test(h));
+            const idxExcesso = headers.findIndex((h) => /EXCESSO/i.test(h));
+            const idxStatus = headers.findIndex((h) => /STATUS/i.test(h));
+
+            const parseBRNumber = (value) => {
+                if (value == null) return NaN;
+                const normalized = String(value)
+                    .replace('%', '')
+                    .replace(/\s+/g, '')
+                    .replace(/\./g, '')
+                    .replace(',', '.');
+                const parsed = parseFloat(normalized);
+                return Number.isFinite(parsed) ? parsed : NaN;
+            };
+
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 24,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 1.5, overflow: 'linebreak' },
+                headStyles: { fontStyle: 'bold', fillColor: [30, 58, 138], textColor: 255 },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                margin: { left: 10, right: 10 },
+                didParseCell: (data) => {
+                    if (data.section !== 'body') return;
+                    const col = data.column.index;
+                    const row = data.row.index;
+
+                    if (idxNota >= 0 && col === idxNota) {
+                        const nota = parseBRNumber(rows[row][idxNota]);
+                        if (nota >= 80) {
+                            data.cell.styles.fillColor = [220, 252, 231];
+                            data.cell.styles.textColor = [22, 101, 52];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (nota < 60) {
+                            data.cell.styles.fillColor = [254, 226, 226];
+                            data.cell.styles.textColor = [153, 27, 27];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+
+                    if (idxFaixa >= 0 && col === idxFaixa) {
+                        const faixa = parseBRNumber(rows[row][idxFaixa]);
+                        if (faixa >= 85) {
+                            data.cell.styles.fillColor = [220, 252, 231];
+                            data.cell.styles.textColor = [22, 101, 52];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (faixa < 70) {
+                            data.cell.styles.fillColor = [254, 242, 242];
+                            data.cell.styles.textColor = [153, 27, 27];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+
+                    if (idxExcesso >= 0 && col === idxExcesso) {
+                        const excesso = parseBRNumber(rows[row][idxExcesso]);
+                        if (excesso <= 2.5) {
+                            data.cell.styles.fillColor = [220, 252, 231];
+                            data.cell.styles.textColor = [22, 101, 52];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (excesso > 5) {
+                            data.cell.styles.fillColor = [254, 226, 226];
+                            data.cell.styles.textColor = [153, 27, 27];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+
+                    if (idxStatus >= 0 && col === idxStatus) {
+                        const status = rows[row][idxStatus].toLowerCase();
+                        if (status.includes('elite') || status.includes('bom')) {
+                            data.cell.styles.fillColor = [220, 252, 231];
+                            data.cell.styles.textColor = [22, 101, 52];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (status.includes('atencao')) {
+                            data.cell.styles.fillColor = [254, 226, 226];
+                            data.cell.styles.textColor = [153, 27, 27];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                }
+            });
+
+            doc.save(`Detalhamento_Gobrax_${sanitizeFileName(periodo)}.pdf`);
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao gerar PDF. Veja o console para detalhes.');
+        }
+    }
+
+    function normalizeText(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function normalizeKey(value) {
+        return normalizeText(value)
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim();
+    }
+
+    function parseLocaleNumber(value) {
+        if (typeof value === 'number') return value;
+        if (value == null) return 0;
+        const raw = String(value).trim();
+        if (!raw) return 0;
+
+        const normalized = raw
+            .replace(/[R$\s]/g, '')
+            .replace(/%/g, '')
+            .replace(/\.(?=\d{3}(?:\D|$))/g, '')
+            .replace(',', '.');
+
+        const parsed = parseFloat(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function parsePercent(value) {
+        return parseLocaleNumber(String(value || '').replace('%', ''));
+    }
+
+    function parseDurationToHours(value) {
+        const raw = String(value || '').trim();
+        if (!raw || !raw.includes(':')) return 0;
+        const parts = raw.split(':').map((part) => parseInt(part, 10) || 0);
+        if (parts.length !== 3) return 0;
+        return parts[0] + (parts[1] / 60) + (parts[2] / 3600);
+    }
+
+    function formatHours(value) {
+        if (!Number.isFinite(value) || value <= 0) return '0h';
+        const totalMinutes = Math.round(value * 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        if (!hours) return `${minutes}min`;
+        return minutes ? `${hours}h ${minutes}min` : `${hours}h`;
+    }
+
+    function formatNumber(value, decimals = 0) {
+        return Number(value || 0).toLocaleString('pt-BR', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+
+    function formatPercent(value, decimals = 1) {
+        return `${formatNumber(value, decimals)}%`;
+    }
+
+    function safeDivide(numerator, denominator) {
+        return denominator ? numerator / denominator : 0;
+    }
+
+    function sanitizeFileName(value) {
+        return String(value || 'periodo').replace(/[^0-9A-Za-z_-]+/g, '_');
+    }
+
+    function gradeFromScore(score) {
+        if (score >= 90) return 'A';
+        if (score >= 80) return 'B';
+        if (score >= 70) return 'C';
+        if (score >= 60) return 'D';
+        return 'E';
+    }
+
+    function compareMetric(current, previous, higherIsGood = true, unit = '', decimals = 1) {
+        if (!previous || !Number.isFinite(previous)) {
+            return {
+                text: `Atual: ${formatNumber(current, decimals)}${unit}`,
+                pill: 'Sem historico',
+                className: 'delta-neutral'
+            };
+        }
+
+        const diff = current - previous;
+        const good = higherIsGood ? diff >= 0 : diff <= 0;
+        const arrow = diff >= 0 ? '▲' : '▼';
+        const value = `${Math.abs(diff).toFixed(decimals)}${unit}`;
+
+        return {
+            text: `Atual: ${formatNumber(current, decimals)}${unit} | Anterior: ${formatNumber(previous, decimals)}${unit}`,
+            pill: `${arrow} ${value}`,
+            className: good ? 'delta-good' : 'delta-bad'
+        };
+    }
+
+    function setStatus(status, message) {
+        const element = document.getElementById('status-display');
+        if (status === 'online') {
+            element.className = 'status-pill status-online';
+            element.textContent = 'Base Gobrax online';
+        } else if (status === 'manual') {
+            element.className = 'status-pill status-online';
+            element.textContent = 'Arquivo local carregado';
+        } else if (status === 'loading') {
+            element.className = 'status-pill status-loading';
+            element.textContent = message || 'Carregando...';
+        } else {
+            element.className = 'status-pill status-offline';
+            element.textContent = message || 'Falha ao carregar base';
+        }
+    }
+
+    function getField(row, candidates) {
+        const candidateList = Array.isArray(candidates) ? candidates : [candidates];
+        const entries = Object.entries(row);
+        for (const candidate of candidateList) {
+            const normalizedCandidate = normalizeKey(candidate);
+            const found = entries.find(([key]) => key === normalizedCandidate);
+            if (found) return found[1];
+        }
+        return '';
+    }
+
+    function buildNormalizedRow(row) {
+        const normalized = {};
+        Object.entries(row || {}).forEach(([key, value]) => {
+            normalized[normalizeKey(key)] = value;
+        });
+        return normalized;
+    }
+
+    function inferMonthOrder(name) {
+        const normalized = normalizeKey(name);
+        const match = SHEET_CONFIG.find((sheet) => normalizeKey(sheet.name) === normalized || normalizeKey(sheet.sourceName) === normalized);
+        return match ? match.order : 99;
+    }
+
+    function inferMonthLabel(name) {
+        const normalized = normalizeKey(name);
+        const match = SHEET_CONFIG.find((sheet) => normalizeKey(sheet.name) === normalized || normalizeKey(sheet.sourceName) === normalized);
+        return match ? match.name : normalizeText(name) || 'Importado';
+    }
+
+    function resolveVehicleStatus(vehicle) {
+        if (vehicle.km <= 0 && vehicle.consumo <= 0) return STATUS_RULES.semUso;
+        if (vehicle.notaMedia >= 80 && vehicle.faixaVerdePct >= 85 && vehicle.excessoPct <= 2.5) return STATUS_RULES.elite;
+        if (vehicle.notaMedia >= 60 && vehicle.faixaVerdePct >= 70 && vehicle.excessoPct <= 5) return STATUS_RULES.bom;
+        return STATUS_RULES.atencao;
+    }
+
+    function getProgressClass(value) {
+        if (value >= 80) return 'bar-green';
+        if (value >= 60) return 'bar-yellow';
+        return 'bar-red';
+    }
+
+    function buildSheetUrl(gid) {
+        return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
+    }
+
+    function getBundledSheets() {
+        if (!window.GOBRAX_DATA || !Array.isArray(window.GOBRAX_DATA.sheets)) return [];
+        return window.GOBRAX_DATA.sheets.map((sheet) => ({
+            name: inferMonthLabel(sheet.name),
+            order: sheet.order || inferMonthOrder(sheet.name),
+            rows: Array.isArray(sheet.rows) ? sheet.rows : []
+        })).filter((sheet) => sheet.rows.length);
+    }
+
+    function fetchSheetViaJsonp(gid) {
+        return new Promise((resolve, reject) => {
+            const callbackName = `__gobr_cb_${gid}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+            const script = document.createElement('script');
+            const timeout = window.setTimeout(() => {
+                cleanup();
+                reject(new Error(`Timeout ao carregar aba ${gid}`));
+            }, 20000);
+
+            function cleanup() {
+                window.clearTimeout(timeout);
+                if (script.parentNode) script.parentNode.removeChild(script);
+                try { delete window[callbackName]; } catch (error) { window[callbackName] = undefined; }
+            }
+
+            window[callbackName] = (response) => {
+                try {
+                    const table = response?.table;
+                    if (!table || !Array.isArray(table.cols)) {
+                        throw new Error('Resposta invalida da planilha');
+                    }
+
+                    const headers = table.cols.map((col, index) => normalizeText(col?.label || col?.id || `col_${index}`));
+                    const rows = (table.rows || []).map((row) => {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            const cell = row?.c?.[index];
+                            const value = cell?.f ?? cell?.v ?? '';
+                            obj[header] = typeof value === 'string' ? value : String(value);
+                        });
+                        return obj;
+                    });
+
+                    cleanup();
+                    resolve(rows);
+                } catch (error) {
+                    cleanup();
+                    reject(error);
+                }
+            };
+
+            script.onerror = () => {
+                cleanup();
+                reject(new Error(`Falha ao carregar aba ${gid}`));
+            };
+
+            script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${gid}&tqx=responseHandler:${callbackName}`;
+            document.head.appendChild(script);
+        });
+    }
+
+    async function fetchTextWithFallback(url) {
+        for (const proxy of CONNECTION_METHODS) {
+            const withCacheBust = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+            const finalUrl = proxy ? `${proxy}${encodeURIComponent(withCacheBust)}` : withCacheBust;
+            try {
+                const response = await fetch(finalUrl);
+                if (!response.ok) continue;
+                const text = await response.text();
+                if (text && !text.trim().startsWith('<!DOCTYPE')) return text;
+                if (!text) return '';
+            } catch (error) {
+                console.warn('Falha de leitura', finalUrl, error);
+            }
+        }
+        throw new Error('Nao foi possivel ler a aba.');
+    }
+
+    async function carregarDadosOnline() {
+        setStatus('loading', 'Carregando planilha Gobrax...');
+
+        try {
+            const bundledSheets = getBundledSheets();
+            if (bundledSheets.length) {
+                processarWorkbook(bundledSheets);
+                setStatus('manual');
+                const generatedAt = window.GOBRAX_DATA?.generatedAt;
+                if (generatedAt) {
+                    document.getElementById('last-update-pill').textContent = `Base local ${new Date(generatedAt).toLocaleString('pt-BR')}`;
+                }
+                return;
+            }
+
+            const results = await Promise.all(
+                SHEET_CONFIG.map(async (sheet) => {
+                    try {
+                        const rows = await fetchSheetViaJsonp(sheet.gid);
+                        if (rows && rows.length) {
+                            return { name: sheet.name, order: sheet.order, rows };
+                        }
+                    } catch (jsonpError) {
+                        console.warn('Falha no carregamento JSONP, tentando CSV:', sheet.name, jsonpError);
+                    }
+
+                    const csvText = await fetchTextWithFallback(buildSheetUrl(sheet.gid));
+                    if (!csvText || !csvText.trim()) return null;
+                    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+                    if (!parsed.data || !parsed.data.length) return null;
+                    return { name: sheet.name, order: sheet.order, rows: parsed.data };
+                })
+            );
+
+            const availableSheets = results.filter(Boolean);
+            if (!availableSheets.length) {
+                setStatus('offline', 'Planilha sem dados disponiveis');
+                return;
+            }
+
+            processarWorkbook(availableSheets);
+            setStatus('online');
+        } catch (error) {
+            console.error(error);
+            setStatus('offline', 'Falha ao conectar na planilha');
+        }
+    }
+
+    async function handleLocalUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setStatus('loading', 'Lendo arquivo local...');
+
+        const extension = file.name.split('.').pop().toLowerCase();
+
+        try {
+            if (extension === 'csv') {
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        processarWorkbook([{ name: inferMonthLabel(file.name.replace(/\.[^.]+$/, '')), order: inferMonthOrder(file.name), rows: result.data }]);
+                        setStatus('manual');
+                    },
+                    error: (error) => {
+                        console.error(error);
+                        setStatus('offline', 'Falha ao ler CSV local');
+                    }
+                });
+                return;
+            }
+
+            const buffer = await file.arrayBuffer();
+            const workbook = XLSX.read(buffer, { type: 'array' });
+            const sheets = workbook.SheetNames.map((sheetName) => ({
+                name: inferMonthLabel(sheetName),
+                order: inferMonthOrder(sheetName),
+                rows: XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '', raw: false })
+            })).filter((sheet) => sheet.rows && sheet.rows.length);
+
+            if (!sheets.length) {
+                setStatus('offline', 'Arquivo sem abas validas');
+                return;
+            }
+
+            processarWorkbook(sheets);
+            setStatus('manual');
+        } catch (error) {
+            console.error(error);
+            setStatus('offline', 'Falha ao ler arquivo local');
+        }
+    }
+
+    function processarWorkbook(sheets) {
+        const dataset = [];
+        const periodMap = new Map();
+
+        sheets.forEach((sheet) => {
+            const periodLabel = inferMonthLabel(sheet.name);
+            const periodOrder = sheet.order || inferMonthOrder(sheet.name);
+            if (sheet.rows && sheet.rows.length) periodMap.set(periodLabel, periodOrder);
+
+            sheet.rows.forEach((rawRow) => {
+                const row = buildNormalizedRow(rawRow);
+
+                const frota = String(getField(row, ['frota'])).trim();
+                const placa = String(getField(row, ['placa'])).trim().toUpperCase();
+                const modelo = String(getField(row, ['modelo'])).trim();
+                const grupo = String(getField(row, ['grupo de veiculos', 'grupo'])).trim();
+
+                if (!frota && !placa && !modelo) return;
+
+                const km = parseLocaleNumber(getField(row, ['km total', 'km']));
+                const consumo = parseLocaleNumber(getField(row, ['consumo total', 'consumo']));
+                const nota = parseLocaleNumber(getField(row, ['nota geral', 'nota']));
+                const mediaBordo = parseLocaleNumber(getField(row, ['media computador de bordo', 'media de bordo']));
+                const velocidadeMedia = parseLocaleNumber(getField(row, ['velocidade media']));
+                const faixaVerdeHours = parseDurationToHours(getField(row, ['faixa verde']));
+                const tempoMovimentoHours = parseDurationToHours(getField(row, ['tempo em movimento']));
+                const idleHours = parseDurationToHours(getField(row, ['total motor ligado parado']));
+                const excessoHours = parseDurationToHours(getField(row, ['excesso de velocidade']));
+                const idlePct = parsePercent(getField(row, ['% total motor ligado parado']));
+                const faixaVerdePct = parsePercent(getField(row, ['% faixa verde']));
+                const excessoPct = parsePercent(getField(row, ['% excesso de velocidade']));
+                const freadas100Km = parseLocaleNumber(getField(row, ['freadas a cada 100 km']));
+
+                const hasRelevantData = km > 0 || consumo > 0 || nota > 0 || tempoMovimentoHours > 0 || faixaVerdeHours > 0;
+                if (!hasRelevantData) return;
+
+                dataset.push({
+                    periodLabel,
+                    periodOrder,
+                    frota,
+                    placa,
+                    modelo,
+                    grupo,
+                    km,
+                    consumo,
+                    nota,
+                    mediaBordo,
+                    velocidadeMedia,
+                    faixaVerdeHours,
+                    tempoMovimentoHours,
+                    idleHours,
+                    idlePct,
+                    excessoHours,
+                    faixaVerdePct,
+                    excessoPct,
+                    freadas100Km
+                });
+            });
+        });
+
+        GLOBAL_DATA = dataset;
+        PERIODS_LIST = Array.from(periodMap.entries())
+            .sort((a, b) => b[1] - a[1])
+            .map(([label]) => label)
+            .filter((label) => GLOBAL_DATA.some((item) => item.periodLabel === label));
+
+        preencherFiltroPeriodos();
+        preencherFiltroMesesRapidos();
+        aplicarFiltro();
+    }
+
+    function preencherFiltroPeriodos() {
+        const select = document.getElementById('month-filter');
+        select.innerHTML = '';
+
+        const consolidatedOption = document.createElement('option');
+        consolidatedOption.value = 'all';
+        consolidatedOption.textContent = 'Consolidado';
+        select.appendChild(consolidatedOption);
+
+        PERIODS_LIST.forEach((period) => {
+            const option = document.createElement('option');
+            option.value = period;
+            option.textContent = period;
+            select.appendChild(option);
+        });
+
+        select.value = PERIODS_LIST[0] || 'all';
+    }
+
+    function preencherFiltroMesesRapidos() {
+        const container = document.getElementById('month-chip-list');
+        if (!container) return;
+        container.innerHTML = '';
+
+        PERIODS_LIST.slice(0, 4).forEach((period) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'month-chip';
+            chip.textContent = period;
+            chip.onclick = () => {
+                document.getElementById('month-filter').value = period;
+                aplicarFiltro();
+            };
+            container.appendChild(chip);
+        });
+    }
+
+    function fillSelectOptions(selectId, values, defaultLabel, currentValue = 'all') {
+        const select = document.getElementById(selectId);
+        if (!select) return currentValue;
+
+        const normalizedValues = [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        select.innerHTML = `<option value="all">${defaultLabel}</option>`;
+        normalizedValues.forEach((value) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
+        });
+
+        const valid = normalizedValues.includes(currentValue);
+        select.value = valid ? currentValue : 'all';
+        return select.value;
+    }
+
+    function applySecondaryFilters(records, selectedGroup, selectedVehicle) {
+        return records.filter((record) => {
+            const groupOk = selectedGroup === 'all' || record.grupo === selectedGroup;
+            const vehicleOk = selectedVehicle === 'all' || record.frota === selectedVehicle;
+            return groupOk && vehicleOk;
+        });
+    }
+
+    function aplicarFiltro() {
+        const selectedPeriod = document.getElementById('month-filter').value;
+        const baseRecords = selectedPeriod === 'all'
+            ? [...GLOBAL_DATA]
+            : GLOBAL_DATA.filter((item) => item.periodLabel === selectedPeriod);
+
+        const previousGroup = document.getElementById('group-filter')?.value || 'all';
+        const selectedGroup = fillSelectOptions('group-filter', baseRecords.map((item) => item.grupo), 'Todos os grupos', previousGroup);
+
+        const recordsByGroup = applySecondaryFilters(baseRecords, selectedGroup, 'all');
+        const previousVehicle = document.getElementById('vehicle-filter')?.value || 'all';
+        const selectedVehicle = fillSelectOptions('vehicle-filter', recordsByGroup.map((item) => item.frota), 'Todos os equipamentos', previousVehicle);
+
+        const currentRecords = applySecondaryFilters(baseRecords, selectedGroup, selectedVehicle);
+
+        const currentIndex = PERIODS_LIST.indexOf(selectedPeriod);
+        const previousPeriod = selectedPeriod !== 'all' && currentIndex >= 0 ? PERIODS_LIST[currentIndex + 1] : null;
+        const previousBaseRecords = previousPeriod
+            ? GLOBAL_DATA.filter((item) => item.periodLabel === previousPeriod)
+            : [];
+        const previousRecords = applySecondaryFilters(previousBaseRecords, selectedGroup, selectedVehicle);
+
+        const currentSummary = calcResumo(currentRecords);
+        const previousSummary = calcResumo(previousRecords);
+
+        atualizarTela(currentSummary, previousSummary, currentRecords, {
+            period: selectedPeriod,
+            previousPeriod,
+            group: selectedGroup,
+            vehicle: selectedVehicle
+        });
+    }
+
+    function aggregateVehicles(records) {
+        const vehicleMap = {};
+
+        records.forEach((record) => {
+            const id = record.frota || record.placa || record.modelo;
+            if (!vehicleMap[id]) {
+                vehicleMap[id] = {
+                    id,
+                    placa: record.placa,
+                    modelo: record.modelo,
+                    grupo: record.grupo,
+                    km: 0,
+                    consumo: 0,
+                    notaTotal: 0,
+                    notaCount: 0,
+                    movimentoHours: 0,
+                    idleHours: 0,
+                    idlePctWeighted: 0,
+                    idlePctBase: 0,
+                    faixaVerdeHours: 0,
+                    excessoHours: 0,
+                    freadasTotal: 0,
+                    freadasBase: 0,
+                    mediaBordoWeighted: 0,
+                    mediaBordoBase: 0
+                };
+            }
+
+            const vehicle = vehicleMap[id];
+            vehicle.km += record.km;
+            vehicle.consumo += record.consumo;
+            vehicle.movimentoHours += record.tempoMovimentoHours;
+            vehicle.idleHours += record.idleHours;
+            vehicle.faixaVerdeHours += record.faixaVerdeHours;
+            vehicle.excessoHours += record.excessoHours;
+            vehicle.freadasTotal += record.freadas100Km * (record.km > 0 ? record.km : 1);
+            vehicle.freadasBase += (record.km > 0 ? record.km : 1);
+
+            if (record.nota > 0) {
+                vehicle.notaTotal += record.nota;
+                vehicle.notaCount += 1;
+            }
+
+            if (record.idlePct > 0) {
+                const timeBase = record.tempoMovimentoHours + record.idleHours;
+                const weight = timeBase > 0 ? timeBase : 1;
+                vehicle.idlePctWeighted += record.idlePct * weight;
+                vehicle.idlePctBase += weight;
+            }
+
+            if (record.mediaBordo > 0) {
+                const weight = record.km > 0 ? record.km : 1;
+                vehicle.mediaBordoWeighted += record.mediaBordo * weight;
+                vehicle.mediaBordoBase += weight;
+            }
+        });
+
+        return Object.values(vehicleMap).map((vehicle) => {
+            const kmlCalculado = safeDivide(vehicle.km, vehicle.consumo);
+            const faixaVerdePct = safeDivide(vehicle.faixaVerdeHours, vehicle.movimentoHours) * 100;
+            const excessoPct = safeDivide(vehicle.excessoHours, vehicle.movimentoHours) * 100;
+            const status = resolveVehicleStatus({
+                ...vehicle,
+                kml: kmlCalculado,
+                notaMedia: safeDivide(vehicle.notaTotal, vehicle.notaCount),
+                faixaVerdePct,
+                excessoPct
+            });
+
+            return {
+                ...vehicle,
+                kml: kmlCalculado || safeDivide(vehicle.mediaBordoWeighted, vehicle.mediaBordoBase),
+                notaMedia: safeDivide(vehicle.notaTotal, vehicle.notaCount),
+                idlePct: safeDivide(vehicle.idlePctWeighted, vehicle.idlePctBase) || safeDivide(vehicle.idleHours, vehicle.movimentoHours + vehicle.idleHours) * 100,
+                faixaVerdePct,
+                excessoPct,
+                freadas100Km: safeDivide(vehicle.freadasTotal, vehicle.freadasBase),
+                grade: gradeFromScore(safeDivide(vehicle.notaTotal, vehicle.notaCount)),
+                status
+            };
+        });
+    }
+
+    function aggregateGroups(records) {
+        const groupMap = {};
+
+        records.forEach((record) => {
+            const key = record.grupo || 'Sem grupo';
+            if (!groupMap[key]) {
+                groupMap[key] = {
+                    label: key,
+                    km: 0,
+                    consumo: 0,
+                    notaTotal: 0,
+                    notaCount: 0,
+                    movimentoHours: 0,
+                    faixaVerdeHours: 0
+                };
+            }
+
+            const group = groupMap[key];
+            group.km += record.km;
+            group.consumo += record.consumo;
+            group.movimentoHours += record.tempoMovimentoHours;
+            group.faixaVerdeHours += record.faixaVerdeHours;
+            if (record.nota > 0) {
+                group.notaTotal += record.nota;
+                group.notaCount += 1;
+            }
+        });
+
+        return Object.values(groupMap)
+            .map((group) => ({
+                ...group,
+                notaMedia: safeDivide(group.notaTotal, group.notaCount),
+                eficiencia: safeDivide(group.km, group.consumo),
+                faixaVerdePct: safeDivide(group.faixaVerdeHours, group.movimentoHours) * 100
+            }))
+            .sort((a, b) => b.km - a.km);
+    }
+
+    function calcResumo(records) {
+        const vehicles = aggregateVehicles(records);
+        const groups = aggregateGroups(records);
+        const km = records.reduce((sum, item) => sum + item.km, 0);
+        const consumo = records.reduce((sum, item) => sum + item.consumo, 0);
+        const movimentoHours = records.reduce((sum, item) => sum + item.tempoMovimentoHours, 0);
+        const idleHours = records.reduce((sum, item) => sum + item.idleHours, 0);
+        const faixaVerdeHours = records.reduce((sum, item) => sum + item.faixaVerdeHours, 0);
+        const excessoHours = records.reduce((sum, item) => sum + item.excessoHours, 0);
+        const notaValores = records.filter((item) => item.nota > 0);
+        const activeVehicles = vehicles.filter((item) => item.km > 0 || item.consumo > 0 || item.movimentoHours > 0);
+        const criticalVehicles = activeVehicles.filter((item) => item.notaMedia > 0 && item.notaMedia < 60);
+        const healthyVehicles = activeVehicles.filter((item) => item.status.label === 'Bom' || item.status.label === 'Elite');
+        const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+        activeVehicles.forEach((vehicle) => { distribution[vehicle.grade] += 1; });
+
+        return {
+            records,
+            vehicles,
+            groups,
+            activeVehicleList: activeVehicles,
+            activeVehicles: activeVehicles.length,
+            km,
+            consumo,
+            eficiencia: safeDivide(km, consumo),
+            notaMedia: notaValores.length ? notaValores.reduce((sum, item) => sum + item.nota, 0) / notaValores.length : 0,
+            faixaVerdePct: safeDivide(faixaVerdeHours, movimentoHours) * 100,
+            movimentoPct: safeDivide(movimentoHours, movimentoHours + idleHours) * 100,
+            idlePct: safeDivide(idleHours, movimentoHours + idleHours) * 100,
+            excessoPct: safeDivide(excessoHours, movimentoHours) * 100,
+            excessoHours,
+            idleHours,
+            criticalVehicles: criticalVehicles.length,
+            metaAtingidaPct: safeDivide(healthyVehicles.length, activeVehicles.length) * 100,
+            distMedia: safeDivide(km, activeVehicles.length),
+            distribution
+        };
+    }
+
+    function atualizarTela(currentSummary, previousSummary, currentRecords) {
+        document.getElementById('kpi-km').textContent = `${formatNumber(currentSummary.km, 0)} km`;
+        document.getElementById('kpi-km-sub').textContent = `${formatNumber(currentSummary.activeVehicles, 0)} veiculos com leitura`;
+        document.getElementById('kpi-consumo').textContent = `${formatNumber(currentSummary.consumo, 0)} L`;
+        document.getElementById('kpi-eficiencia').textContent = formatNumber(currentSummary.eficiencia, 2);
+        document.getElementById('kpi-nota').textContent = formatNumber(currentSummary.notaMedia, 1);
+        document.getElementById('kpi-faixa').textContent = formatPercent(currentSummary.faixaVerdePct, 1);
+        document.getElementById('kpi-excesso').textContent = formatPercent(currentSummary.excessoPct, 1);
+        document.getElementById('kpi-excesso-horas').textContent = `${formatHours(currentSummary.excessoHours)} em excesso`;
+
+        renderBadge('comp-consumo', currentSummary.consumo, previousSummary.consumo, false);
+        renderBadge('comp-eficiencia', currentSummary.eficiencia, previousSummary.eficiencia, true);
+        renderBadge('comp-nota', currentSummary.notaMedia, previousSummary.notaMedia, true);
+
+        const faixaCard = document.getElementById('card-faixa-bg');
+        const faixaMsg = document.getElementById('kpi-faixa-msg');
+        faixaCard.className = 'card card-spotlight';
+        if (currentSummary.faixaVerdePct >= 85) {
+            faixaCard.classList.add('spotlight-good');
+            faixaMsg.textContent = 'Operacao dentro da faixa saudavel';
+            faixaMsg.style.color = 'var(--success)';
+        } else if (currentSummary.faixaVerdePct >= 70) {
+            faixaCard.classList.add('spotlight-warn');
+            faixaMsg.textContent = 'Faixa verde em zona de atencao';
+            faixaMsg.style.color = 'var(--warning)';
+        } else {
+            faixaCard.classList.add('spotlight-bad');
+            faixaMsg.textContent = 'Faixa verde abaixo do esperado';
+            faixaMsg.style.color = 'var(--danger)';
+        }
+
+        renderRanking(currentSummary.vehicles);
+        renderDetalhamento(currentSummary.vehicles);
+        updateCharts(currentRecords);
+    }
+
+    function renderBadge(id, current, previous, higherIsGood) {
+        const element = document.getElementById(id);
+        if (!previous) {
+            element.style.display = 'none';
+            return;
+        }
+
+        const diff = current - previous;
+        const pct = previous ? (diff / previous) * 100 : 0;
+        if (!Number.isFinite(pct)) {
+            element.style.display = 'none';
+            return;
+        }
+
+        const positive = diff > 0;
+        const neutral = Math.abs(pct) < 0.05;
+        const good = higherIsGood ? positive : !positive;
+
+        element.style.display = 'inline-block';
+
+        if (neutral) {
+            element.className = 'comp-badge comp-neutral';
+            element.textContent = 'Estavel';
+            return;
+        }
+
+        element.className = `comp-badge ${good ? 'comp-up' : 'comp-down'}`;
+        element.textContent = `${positive ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% vs mes anterior`;
+    }
+
+    function renderRanking(vehicles) {
+        const tbody = document.querySelector('#table-ranking tbody');
+        tbody.innerHTML = '';
+
+        vehicles
+            .filter((vehicle) => vehicle.km > 0 || vehicle.consumo > 0)
+            .sort((a, b) => {
+                if (b.notaMedia !== a.notaMedia) return b.notaMedia - a.notaMedia;
+                return b.kml - a.kml;
+            })
+            .slice(0, 10)
+            .forEach((vehicle) => {
+                const progress = Math.min(Math.max(vehicle.notaMedia, 0), 100);
+                const progressClass = getProgressClass(progress);
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <strong>${vehicle.id}</strong>
+                            <small style="color:#64748b">${vehicle.modelo || '-'}</small>
+                        </td>
+                        <td>
+                            <div style="font-weight:800">${formatNumber(vehicle.notaMedia, 1)}</div>
+                            <div class="progress-bg"><div class="progress-bar ${progressClass}" style="width:${progress}%"></div></div>
+                        </td>
+                        <td style="color:${vehicle.status.color}; font-weight:700; font-size:11px;">${vehicle.status.label}</td>
+                    </tr>
+                `;
+            });
+    }
+
+    function renderDetalhamento(vehicles) {
+        const tbody = document.querySelector('#table-main tbody');
+        tbody.innerHTML = '';
+
+        vehicles
+            .slice()
+            .sort((a, b) => {
+                if (a.status.label !== b.status.label) {
+                    const order = { 'Atencao': 0, 'Bom': 1, 'Elite': 2, 'Sem uso': 3 };
+                    return (order[a.status.label] ?? 9) - (order[b.status.label] ?? 9);
+                }
+                return a.notaMedia - b.notaMedia;
+            })
+            .forEach((vehicle) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${vehicle.id}</strong></td>
+                        <td>${vehicle.placa || '-'}</td>
+                        <td>${vehicle.modelo || '-'}</td>
+                        <td>${vehicle.grupo || '-'}</td>
+                        <td>${formatNumber(vehicle.km, 0)}</td>
+                        <td>${formatNumber(vehicle.consumo, 0)} L</td>
+                        <td>${formatNumber(vehicle.kml, 2)}</td>
+                        <td>${formatNumber(vehicle.notaMedia, 1)}</td>
+                        <td>${formatPercent(vehicle.faixaVerdePct, 1)}</td>
+                        <td style="color:${vehicle.excessoPct > 5 ? 'var(--danger)' : 'var(--text-main)'}; font-weight:700;">${formatPercent(vehicle.excessoPct, 1)}</td>
+                        <td style="color:${vehicle.status.color}; font-weight:700;">${vehicle.status.label}</td>
+                    </tr>
+                `;
+            });
+    }
+
+    function updateCharts(currentRecords) {
+        const trendLabels = PERIODS_LIST.slice().reverse();
+        const trendEfficiency = trendLabels.map((period) => {
+            const filtered = applySecondaryFilters(GLOBAL_DATA.filter((item) => item.periodLabel === period), context.group, context.vehicle);
+            return calcResumo(filtered).eficiencia;
+        });
+        const trendScore = trendLabels.map((period) => {
+            const filtered = applySecondaryFilters(GLOBAL_DATA.filter((item) => item.periodLabel === period), context.group, context.vehicle);
+            return calcResumo(filtered).notaMedia;
+        });
+
+        const trendContext = document.getElementById('chartTrend').getContext('2d');
+        if (chartTrend) chartTrend.destroy();
+        chartTrend = new Chart(trendContext, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    {
+                        label: 'Eficiencia (KM/L)',
+                        data: trendEfficiency,
+                        borderColor: '#1e3a8a',
+                        backgroundColor: 'rgba(30, 58, 138, 0.12)',
+                        fill: true,
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Nota media',
+                        data: trendScore,
+                        borderColor: '#16a34a',
+                        backgroundColor: '#16a34a',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: {
+                        position: 'left',
+                        grid: { color: '#f1f5f9' },
+                        ticks: { callback: (value) => formatNumber(value, 2) }
+                    },
+                    y1: {
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        grid: { drawOnChartArea: false },
+                        ticks: { callback: (value) => value }
+                    }
+                }
+            }
+        });
+
+        const currentGroups = aggregateGroups(currentRecords).slice(0, 7);
+        const groupLabels = currentGroups.map((group) => group.label);
+        const groupKm = currentGroups.map((group) => group.km);
+        const groupScore = currentGroups.map((group) => group.notaMedia);
+
+        const groupContext = document.getElementById('chartGroups').getContext('2d');
+        if (chartGroups) chartGroups.destroy();
+        chartGroups = new Chart(groupContext, {
+            type: 'bar',
+            data: {
+                labels: groupLabels,
+                datasets: [
+                    {
+                        label: 'KM',
+                        data: groupKm,
+                        backgroundColor: '#1e3a8a',
+                        borderRadius: 4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Nota media',
+                        data: groupScore,
+                        type: 'line',
+                        borderColor: '#f59e0b',
+                        backgroundColor: '#f59e0b',
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: {
+                        position: 'left',
+                        grid: { color: '#f1f5f9' },
+                        ticks: { callback: (value) => `${Math.round(value / 1000)}k` }
+                    },
+                    y1: {
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+    }
+
+    function compareMetric(current, previous, higherIsGood = true, unit = '', decimals = 1) {
+        if (!previous || !Number.isFinite(previous)) {
+            return {
+                text: `Atual: ${formatNumber(current, decimals)}${unit}`,
+                pill: 'Sem historico',
+                className: 'delta-neutral'
+            };
+        }
+
+        const diff = current - previous;
+        const good = higherIsGood ? diff >= 0 : diff <= 0;
+        const arrow = diff >= 0 ? '+' : '-';
+        const value = `${Math.abs(diff).toFixed(decimals)}${unit}`;
+
+        return {
+            text: `Atual: ${formatNumber(current, decimals)}${unit} | Anterior: ${formatNumber(previous, decimals)}${unit}`,
+            pill: `${arrow} ${value}`,
+            className: good ? 'delta-good' : 'delta-bad'
+        };
+    }
+
+    function atualizarTela(currentSummary, previousSummary, currentRecords, context) {
+        const periodLabel = context.period === 'all' ? 'Consolidado' : context.period;
+        document.getElementById('last-update-pill').textContent = `Atualizado em ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+        document.getElementById('period-summary-pill').textContent = `Periodo: ${periodLabel}${context.group !== 'all' ? ` | Grupo: ${context.group}` : ''}${context.vehicle !== 'all' ? ` | Equip.: ${context.vehicle}` : ''}`;
+        document.querySelectorAll('.month-chip').forEach((chip) => chip.classList.toggle('active', chip.textContent === context.period));
+
+        document.getElementById('hero-idle').textContent = formatPercent(currentSummary.idlePct, 1);
+        document.getElementById('hero-idle-sub').textContent = `${formatHours(currentSummary.idleHours)} acumuladas em marcha lenta`;
+        document.getElementById('hero-opportunity').textContent = formatNumber(currentSummary.criticalVehicles, 0);
+        document.getElementById('hero-opportunity-sub').textContent = 'Equipamentos abaixo de 60 pontos';
+        document.getElementById('hero-efficiency').textContent = `${formatNumber(currentSummary.eficiencia, 2)} km/l`;
+        document.getElementById('hero-efficiency-sub').textContent = `Media de ${formatNumber(currentSummary.activeVehicles, 0)} equipamentos com leitura`;
+
+        document.getElementById('kpi-active').textContent = formatNumber(currentSummary.activeVehicles, 0);
+        document.getElementById('kpi-km').textContent = `${formatNumber(currentSummary.km, 0)} km`;
+        document.getElementById('kpi-consumo').textContent = `${formatNumber(currentSummary.consumo, 0)} L`;
+        document.getElementById('kpi-eficiencia').textContent = formatNumber(currentSummary.eficiencia, 2);
+        document.getElementById('kpi-nota').textContent = formatNumber(currentSummary.notaMedia, 1);
+        document.getElementById('kpi-dist-media').textContent = `${formatNumber(currentSummary.distMedia, 0)} km`;
+        document.getElementById('kpi-faixa').textContent = formatPercent(currentSummary.faixaVerdePct, 1);
+        document.getElementById('kpi-idle').textContent = formatPercent(currentSummary.idlePct, 1);
+        document.getElementById('kpi-excesso').textContent = formatPercent(currentSummary.excessoPct, 1);
+        document.getElementById('kpi-excesso-horas').textContent = `${formatHours(currentSummary.excessoHours)} em excesso`;
+
+        document.getElementById('eval-grade').textContent = `${formatNumber(currentSummary.notaMedia, 1)} ${gradeFromScore(currentSummary.notaMedia)}`;
+        document.getElementById('eval-grade-sub').textContent = `${formatPercent(currentSummary.metaAtingidaPct, 1)} da frota fora da zona critica`;
+        document.getElementById('faixa-meter').style.width = `${Math.min(currentSummary.faixaVerdePct, 100)}%`;
+        document.getElementById('kpi-faixa-msg').textContent = currentSummary.faixaVerdePct >= 85
+            ? 'Operacao dentro da faixa saudavel'
+            : currentSummary.faixaVerdePct >= 70 ? 'Faixa verde em zona de atencao' : 'Faixa verde abaixo do esperado';
+
+        document.getElementById('mini-meta').textContent = formatPercent(currentSummary.metaAtingidaPct, 1);
+        document.getElementById('mini-critical').textContent = formatNumber(currentSummary.criticalVehicles, 0);
+        document.getElementById('mini-idle-hours').textContent = formatHours(currentSummary.idleHours);
+
+        document.getElementById('ops-idle').textContent = formatPercent(currentSummary.idlePct, 1);
+        document.getElementById('ops-faixa').textContent = formatPercent(currentSummary.faixaVerdePct, 1);
+        document.getElementById('ops-excesso').textContent = formatPercent(currentSummary.excessoPct, 1);
+        document.getElementById('ops-criticos').textContent = formatNumber(currentSummary.criticalVehicles, 0);
+
+        renderBadge('comp-consumo', currentSummary.consumo, previousSummary.consumo, false);
+        renderBadge('comp-eficiencia', currentSummary.eficiencia, previousSummary.eficiencia, true);
+        renderBadge('comp-nota', currentSummary.notaMedia, previousSummary.notaMedia, true);
+
+        renderAlerts(currentSummary);
+        renderComparisons(currentSummary, previousSummary, context.previousPeriod);
+        renderAttentionTable(currentSummary.activeVehicleList);
+        renderDetalhamento(currentSummary.vehicles);
+        updateCharts(currentSummary, context);
+    }
+
+    function renderBadge(id, current, previous, higherIsGood) {
+        const element = document.getElementById(id);
+        if (!element) return;
+        if (!previous) {
+            element.style.display = 'none';
+            return;
+        }
+
+        const diff = current - previous;
+        const pct = previous ? (diff / previous) * 100 : 0;
+        if (!Number.isFinite(pct)) {
+            element.style.display = 'none';
+            return;
+        }
+
+        const positive = diff > 0;
+        const neutral = Math.abs(pct) < 0.05;
+        const good = higherIsGood ? positive : !positive;
+        element.style.display = 'inline-block';
+
+        if (neutral) {
+            element.className = 'comp-badge comp-neutral';
+            element.textContent = 'Estavel';
+            return;
+        }
+
+        element.className = `comp-badge ${good ? 'comp-up' : 'comp-down'}`;
+        element.textContent = `${positive ? '+' : '-'} ${Math.abs(pct).toFixed(1)}% vs mes anterior`;
+    }
+
+    function renderAlerts(summary) {
+        document.getElementById('alert-1-title').textContent = `${formatPercent(summary.metaAtingidaPct, 1)} da frota fora da zona critica`;
+        document.getElementById('alert-1-text').textContent = summary.metaAtingidaPct >= 70
+            ? 'Acao: manter rotina de acompanhamento e atacar apenas os pontos fora da curva.'
+            : 'Acao: rever rapidamente os equipamentos fora do padrao.';
+
+        document.getElementById('alert-2-title').textContent = `Marcha lenta media em ${formatPercent(summary.idlePct, 1)}`;
+        document.getElementById('alert-2-text').textContent = 'Acao: investigar equipamentos com maior tempo parado e revisar janelas operacionais.';
+
+        document.getElementById('alert-3-title').textContent = `${formatNumber(summary.criticalVehicles, 0)} equipamento(s) com nota critica`;
+        document.getElementById('alert-3-text').textContent = 'Acao: priorizar tratativa nos equipamentos com nota abaixo de 60.';
+
+        document.getElementById('alert-4-title').textContent = `Faixa verde em ${formatPercent(summary.faixaVerdePct, 1)} | Excesso em ${formatPercent(summary.excessoPct, 1)}`;
+        document.getElementById('alert-4-text').textContent = 'Acao: equilibrar disciplina de velocidade com aproveitamento de faixa verde.';
+    }
+
+    function renderComparisons(currentSummary, previousSummary, previousPeriod) {
+        document.getElementById('compare-period-label').textContent = previousPeriod ? `${previousPeriod} vs periodo atual` : 'Sem periodo anterior comparavel';
+
+        const map = {
+            eff: compareMetric(currentSummary.eficiencia, previousSummary.eficiencia, true, ' km/l', 2),
+            score: compareMetric(currentSummary.notaMedia, previousSummary.notaMedia, true, ' pts', 1),
+            faixa: compareMetric(currentSummary.faixaVerdePct, previousSummary.faixaVerdePct, true, ' p.p.', 1),
+            excesso: compareMetric(currentSummary.excessoPct, previousSummary.excessoPct, false, ' p.p.', 1),
+            km: compareMetric(currentSummary.km, previousSummary.km, true, ' km', 0)
+        };
+
+        Object.entries(map).forEach(([key, value]) => {
+            document.getElementById(`compare-${key}-text`).textContent = value.text;
+            const pill = document.getElementById(`compare-${key}-pill`);
+            pill.textContent = value.pill;
+            pill.className = `delta-pill ${value.className}`;
+        });
+    }
+
+    function renderAttentionTable(vehicles) {
+        const tbody = document.querySelector('#table-attention tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        vehicles
+            .slice()
+            .sort((a, b) => {
+                if (a.notaMedia !== b.notaMedia) return a.notaMedia - b.notaMedia;
+                if (b.idlePct !== a.idlePct) return b.idlePct - a.idlePct;
+                return b.excessoPct - a.excessoPct;
+            })
+            .slice(0, 8)
+            .forEach((vehicle) => {
+                const action = vehicle.notaMedia < 60 ? 'Tratativa imediata' : vehicle.excessoPct > 5 ? 'Rever velocidade' : 'Rever marcha lenta';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${vehicle.id}</strong> <small style="color:#7d8ba8">${vehicle.modelo || '-'}</small></td>
+                        <td>Nota ${formatNumber(vehicle.notaMedia, 1)} | ${formatNumber(vehicle.kml, 2)} km/l | Marcha lenta ${formatPercent(vehicle.idlePct, 1)}</td>
+                        <td><span class="delta-pill ${vehicle.notaMedia < 60 ? 'delta-bad' : 'delta-good'}">${action}</span></td>
+                    </tr>
+                `;
+            });
+    }
+
+    function renderDetalhamento(vehicles) {
+        const tbody = document.querySelector('#table-main tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        vehicles
+            .slice()
+            .sort((a, b) => {
+                if (a.status.label !== b.status.label) {
+                    const order = { 'Atencao': 0, 'Bom': 1, 'Elite': 2, 'Sem uso': 3 };
+                    return (order[a.status.label] ?? 9) - (order[b.status.label] ?? 9);
+                }
+                return a.notaMedia - b.notaMedia;
+            })
+            .forEach((vehicle) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${vehicle.id}</strong></td>
+                        <td>${vehicle.placa || '-'}</td>
+                        <td>${vehicle.modelo || '-'}</td>
+                        <td>${vehicle.grupo || '-'}</td>
+                        <td>${formatNumber(vehicle.km, 0)}</td>
+                        <td>${formatNumber(vehicle.consumo, 0)} L</td>
+                        <td>${formatNumber(vehicle.kml, 2)}</td>
+                        <td>${formatNumber(vehicle.notaMedia, 1)}</td>
+                        <td>${formatPercent(vehicle.faixaVerdePct, 1)}</td>
+                        <td>${formatPercent(vehicle.idlePct, 1)}</td>
+                        <td style="color:${vehicle.excessoPct > 5 ? 'var(--danger)' : 'var(--text-main)'}; font-weight:700;">${formatPercent(vehicle.excessoPct, 1)}</td>
+                        <td>${formatNumber(vehicle.freadas100Km, 1)}</td>
+                        <td style="color:${vehicle.status.color}; font-weight:700;">${vehicle.status.label}</td>
+                    </tr>
+                `;
+            });
+    }
+
+    function updateCharts(currentSummary, context) {
+        const trendLabels = PERIODS_LIST.slice().reverse();
+        const trendEfficiency = trendLabels.map((period) => calcResumo(GLOBAL_DATA.filter((item) => item.periodLabel === period)).eficiencia);
+        const trendScore = trendLabels.map((period) => calcResumo(GLOBAL_DATA.filter((item) => item.periodLabel === period)).notaMedia);
+
+        const trendContext = document.getElementById('chartTrend').getContext('2d');
+        if (chartTrend) chartTrend.destroy();
+        chartTrend = new Chart(trendContext, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    { label: 'Eficiencia (KM/L)', data: trendEfficiency, borderColor: '#1e3a8a', backgroundColor: 'rgba(30, 58, 138, 0.12)', fill: true, tension: 0.3, yAxisID: 'y' },
+                    { label: 'Nota media', data: trendScore, borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2, tension: 0.3, yAxisID: 'y1' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: { position: 'left', grid: { color: '#f1f5f9' }, ticks: { callback: (value) => formatNumber(value, 2) } },
+                    y1: { position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false }, ticks: { callback: (value) => value } }
+                }
+            }
+        });
+
+        const currentGroups = currentSummary.groups.slice(0, 7);
+        const groupContext = document.getElementById('chartGroups').getContext('2d');
+        if (chartGroups) chartGroups.destroy();
+        chartGroups = new Chart(groupContext, {
+            type: 'bar',
+            data: {
+                labels: currentGroups.map((group) => group.label),
+                datasets: [
+                    { label: 'KM', data: currentGroups.map((group) => group.km), backgroundColor: '#1e3a8a', borderRadius: 4, yAxisID: 'y' },
+                    { label: 'Nota media', data: currentGroups.map((group) => group.notaMedia), type: 'line', borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, yAxisID: 'y1' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: { position: 'left', grid: { color: '#f1f5f9' }, ticks: { callback: (value) => `${Math.round(value / 1000)}k` } },
+                    y1: { position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+
+        const vehicleBase = currentSummary.activeVehicleList.slice().sort((a, b) => b.kml - a.kml);
+        const topVehicles = vehicleBase.slice(0, 10);
+        const bottomVehicles = vehicleBase.slice(-10).reverse();
+
+        const topCtx = document.getElementById('chartTopVehicles').getContext('2d');
+        if (chartTopVehicles) chartTopVehicles.destroy();
+        chartTopVehicles = new Chart(topCtx, {
+            type: 'bar',
+            data: { labels: topVehicles.map((item) => item.id), datasets: [{ data: topVehicles.map((item) => item.kml), backgroundColor: '#56c1f3', borderRadius: 999 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#eef3fb' } }, y: { grid: { display: false } } } }
+        });
+
+        const bottomCtx = document.getElementById('chartBottomVehicles').getContext('2d');
+        if (chartBottomVehicles) chartBottomVehicles.destroy();
+        chartBottomVehicles = new Chart(bottomCtx, {
+            type: 'bar',
+            data: { labels: bottomVehicles.map((item) => item.id), datasets: [{ data: bottomVehicles.map((item) => item.kml), backgroundColor: '#fb7185', borderRadius: 999 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#eef3fb' } }, y: { grid: { display: false } } } }
+        });
+
+        const distCtx = document.getElementById('chartDistribution').getContext('2d');
+        if (chartDistribution) chartDistribution.destroy();
+        chartDistribution = new Chart(distCtx, {
+            type: 'bar',
+            data: {
+                labels: ['A', 'B', 'C', 'D', 'E'],
+                datasets: [{ data: ['A', 'B', 'C', 'D', 'E'].map((grade) => currentSummary.distribution[grade]), backgroundColor: ['#22c55e', '#4ade80', '#facc15', '#fb923c', '#ef4444'], borderRadius: 8 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#eef3fb' } }, x: { grid: { display: false } } } }
+        });
+
+        const idleImpacts = currentSummary.activeVehicleList.slice().sort((a, b) => b.idleHours - a.idleHours).slice(0, 10);
+        const idleCtx = document.getElementById('chartIdleImpact').getContext('2d');
+        if (chartIdleImpact) chartIdleImpact.destroy();
+        chartIdleImpact = new Chart(idleCtx, {
+            type: 'bar',
+            data: { labels: idleImpacts.map((item) => item.id), datasets: [{ data: idleImpacts.map((item) => Number(item.idleHours.toFixed(2))), backgroundColor: '#8b5cf6', borderRadius: 999 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#eef3fb' } }, y: { grid: { display: false } } } }
+        });
+
+        document.getElementById('ops-top-label').textContent = `${context.period === 'all' ? 'Consolidado' : context.period} | foco em eficiencia`;
+        document.getElementById('ops-bottom-label').textContent = `${context.period === 'all' ? 'Consolidado' : context.period} | foco em tratativa`;
+        document.getElementById('ops-dist-label').textContent = `Frota filtrada${context.group !== 'all' ? ` | ${context.group}` : ''}`;
+        document.getElementById('ops-group-label').textContent = context.group === 'all' ? 'Leitura por operacao' : `Grupo selecionado: ${context.group}`;
+        document.getElementById('detail-impact-label').textContent = `Periodo ${context.period === 'all' ? 'consolidado' : context.period}`;
+        document.getElementById('detail-trend-label').textContent = 'Eficiencia e nota por mes carregado';
+    }
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && DETALHE_EXPANDIDO) toggleDetalhamento(false);
+    });
+
+    document.getElementById('csv-input').addEventListener('change', handleLocalUpload);
+    window.onload = carregarDadosOnline;
+</script>
+
+</body>
+</html>

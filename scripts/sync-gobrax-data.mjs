@@ -1,0 +1,90 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const SPREADSHEET_ID = '1Jh08X0rCtI5rx82Teu4HRnXofHG2CTwGhpCAfKj9sDY';
+const SHEETS = [
+  { name: 'Marco', gid: '1685318905', order: 3 },
+  { name: 'Abril', gid: '641346232', order: 4 },
+  { name: 'Maio', gid: '322757605', order: 5 },
+  { name: 'Junho', gid: '706345560', order: 6 },
+  { name: 'Julho', gid: '1415754015', order: 7 },
+  { name: 'Agosto', gid: '919511949', order: 8 },
+  { name: 'Setembro', gid: '801949435', order: 9 },
+  { name: 'Outubro', gid: '330406732', order: 10 },
+  { name: 'Novembro', gid: '1146622031', order: 11 },
+  { name: 'Dezembro', gid: '1324616894', order: 12 }
+];
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, '..');
+const outputPath = path.join(projectRoot, 'gobrax-data.js');
+
+function parseGoogleResponse(text) {
+  const start = text.indexOf('(');
+  const end = text.lastIndexOf(')');
+  if (start === -1 || end === -1) {
+    throw new Error('Formato de resposta Google invalido.');
+  }
+
+  const payload = JSON.parse(text.slice(start + 1, end));
+  if (payload.status !== 'ok' || !payload.table) {
+    throw new Error(`Resposta Google sem tabela valida: ${payload.status}`);
+  }
+
+  return payload.table;
+}
+
+async function fetchSheet(sheet) {
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${sheet.gid}&tqx=out:json`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Falha ao baixar ${sheet.name}: ${response.status}`);
+  }
+
+  const buffer = await response.arrayBuffer();
+  const text = new TextDecoder('utf-8').decode(buffer);
+  const table = parseGoogleResponse(text);
+  const headers = table.cols.map((col, index) => col.label || col.id || `col_${index}`);
+  const rows = (table.rows || []).map((row) => {
+    const out = {};
+    headers.forEach((header, index) => {
+      const cell = row?.c?.[index];
+      const value = cell?.f ?? cell?.v ?? '';
+      out[header] = value == null ? '' : String(value);
+    });
+    return out;
+  });
+
+  return {
+    name: sheet.name,
+    gid: sheet.gid,
+    order: sheet.order,
+    rows
+  };
+}
+
+async function main() {
+  const sheets = [];
+  for (const sheet of SHEETS) {
+    const loaded = await fetchSheet(sheet);
+    sheets.push(loaded);
+    console.log(`OK ${sheet.name}: ${loaded.rows.length} linhas`);
+  }
+
+  const payload = {
+    spreadsheetId: SPREADSHEET_ID,
+    generatedAt: new Date().toISOString(),
+    sheets
+  };
+
+  const content = `window.GOBRAX_DATA = ${JSON.stringify(payload, null, 2)};\n`;
+  await mkdir(projectRoot, { recursive: true });
+  await writeFile(outputPath, content, 'utf8');
+  console.log(`Arquivo gerado em ${outputPath}`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
