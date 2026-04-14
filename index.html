@@ -1425,6 +1425,7 @@
 
     function normalizeKey(value) {
         return normalizeText(value)
+            .replace(/%/g, ' pct ')
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, ' ')
             .trim();
