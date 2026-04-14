@@ -590,6 +590,10 @@
                     <option value="all">Todos os equipamentos</option>
                 </select>
             </div>
+            <div class="control-block">
+                <label class="control-label" for="diesel-price">Diesel (R$/L)</label>
+                <input id="diesel-price" class="month-select" type="number" min="0" step="0.01" value="6.30" onchange="handleDieselInputChange()">
+            </div>
             <div class="control-block" style="min-width:120px;">
                 <label class="control-label">&nbsp;</label>
                 <button class="btn-upload action-btn" type="button" onclick="carregarDadosOnline()">Atualizar</button>
@@ -736,6 +740,8 @@
             <div class="mini-card"><div class="mini-label">Potencial de melhoria</div><div class="mini-value" id="mini-critical">0</div><div class="mini-sub">Equipamentos criticos no filtro</div></div>
             <div class="mini-card"><div class="mini-label">Marcha lenta</div><div class="mini-value" id="mini-idle-hours">0h</div><div class="mini-sub">Tempo acumulado em marcha lenta</div></div>
             <div class="mini-card"><div class="mini-label">Excesso vel.</div><div class="mini-value" id="kpi-excesso">0,0%</div><div class="mini-sub" id="kpi-excesso-horas">0h em excesso</div></div>
+            <div class="mini-card"><div class="mini-label">Custo estimado</div><div class="mini-value" id="mini-cost-total">R$ 0,00</div><div class="mini-sub">Consumo total x diesel informado</div></div>
+            <div class="mini-card"><div class="mini-label">Custo por km</div><div class="mini-value" id="mini-cost-km">R$ 0,00</div><div class="mini-sub" id="mini-diesel-ref">Diesel de referencia: R$ 0,00/L</div></div>
         </div>
     </section>
 
@@ -836,8 +842,6 @@
                             <th>Faixa</th>
                             <th>Marcha lenta</th>
                             <th>Excesso vel.</th>
-                            <th>Freadas/100</th>
-                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -1107,12 +1111,72 @@
         return `${formatNumber(value, decimals)}%`;
     }
 
+    function formatCurrency(value) {
+        return Number(value || 0).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
     function safeDivide(numerator, denominator) {
         return denominator ? numerator / denominator : 0;
     }
 
     function sanitizeFileName(value) {
         return String(value || 'periodo').replace(/[^0-9A-Za-z_-]+/g, '_');
+    }
+
+    function getDieselPrice() {
+        const input = document.getElementById('diesel-price');
+        const value = input ? parseFloat(String(input.value).replace(',', '.')) : NaN;
+        return Number.isFinite(value) && value >= 0 ? value : 0;
+    }
+
+    function persistDieselPrice(value) {
+        try {
+            localStorage.setItem('gobrax_diesel_price', String(value));
+        } catch (error) {
+            console.warn('Nao foi possivel salvar o valor do diesel.', error);
+        }
+    }
+
+    function initializeDieselInput() {
+        const input = document.getElementById('diesel-price');
+        if (!input) return;
+
+        let saved = null;
+        try {
+            saved = localStorage.getItem('gobrax_diesel_price');
+        } catch (error) {
+            console.warn('Nao foi possivel ler o valor salvo do diesel.', error);
+        }
+
+        const initialValue = saved && Number.isFinite(parseFloat(saved)) ? parseFloat(saved) : parseFloat(input.value || '6.30');
+        input.value = initialValue.toFixed(2);
+        persistDieselPrice(initialValue.toFixed(2));
+    }
+
+    function handleDieselInputChange() {
+        const input = document.getElementById('diesel-price');
+        if (!input) return;
+
+        const dieselPrice = getDieselPrice();
+        input.value = dieselPrice.toFixed(2);
+        persistDieselPrice(input.value);
+
+        if (GLOBAL_DATA.length) {
+            aplicarFiltro();
+        }
+    }
+
+    function getGradeStyle(grade) {
+        if (grade === 'A') return 'background:#dcfce7;color:#166534;';
+        if (grade === 'B') return 'background:#dbeafe;color:#1d4ed8;';
+        if (grade === 'C') return 'background:#fef3c7;color:#b45309;';
+        if (grade === 'D') return 'background:#ffedd5;color:#c2410c;';
+        return 'background:#fee2e2;color:#b91c1c;';
     }
 
     function gradeFromScore(score) {
@@ -1419,12 +1483,14 @@
                 const placa = String(getField(row, ['placa'])).trim().toUpperCase();
                 const modelo = String(getField(row, ['modelo'])).trim();
                 const grupo = String(getField(row, ['grupo de veiculos', 'grupo'])).trim();
+                const motorista = String(getField(row, ['motorista', 'condutor', 'motorista alocado'])).trim();
 
                 if (!frota && !placa && !modelo) return;
 
                 const km = parseLocaleNumber(getField(row, ['km total', 'km']));
                 const consumo = parseLocaleNumber(getField(row, ['consumo total', 'consumo']));
                 const nota = parseLocaleNumber(getField(row, ['nota geral', 'nota']));
+                const meta = parseLocaleNumber(getField(row, ['meta', 'meta km l', 'meta km/l', 'meta consumo']));
                 const mediaBordo = parseLocaleNumber(getField(row, ['media computador de bordo', 'media de bordo']));
                 const velocidadeMedia = parseLocaleNumber(getField(row, ['velocidade media']));
                 const faixaVerdeHours = parseDurationToHours(getField(row, ['faixa verde']));
@@ -1446,9 +1512,11 @@
                     placa,
                     modelo,
                     grupo,
+                    motorista,
                     km,
                     consumo,
                     nota,
+                    meta,
                     mediaBordo,
                     velocidadeMedia,
                     faixaVerdeHours,
@@ -1589,6 +1657,8 @@
                     placa: record.placa,
                     modelo: record.modelo,
                     grupo: record.grupo,
+                    motorista: record.motorista,
+                    meta: record.meta,
                     km: 0,
                     consumo: 0,
                     notaTotal: 0,
@@ -1607,6 +1677,8 @@
             }
 
             const vehicle = vehicleMap[id];
+            if (!vehicle.motorista && record.motorista) vehicle.motorista = record.motorista;
+            if (!vehicle.meta && record.meta > 0) vehicle.meta = record.meta;
             vehicle.km += record.km;
             vehicle.consumo += record.consumo;
             vehicle.movimentoHours += record.tempoMovimentoHours;
@@ -2002,6 +2074,9 @@
 
     function atualizarTela(currentSummary, previousSummary, currentRecords, context) {
         const periodLabel = context.period === 'all' ? 'Consolidado' : context.period;
+        const dieselPrice = getDieselPrice();
+        const totalCost = currentSummary.consumo * dieselPrice;
+        const costPerKm = safeDivide(totalCost, currentSummary.km);
         const baseStamp = DATASET_META.generatedAt
             ? `Base ${new Date(DATASET_META.generatedAt).toLocaleString('pt-BR')}`
             : `Carga ${new Date(DATASET_META.loadedAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
@@ -2037,6 +2112,9 @@
         document.getElementById('mini-meta').textContent = formatPercent(currentSummary.metaAtingidaPct, 1);
         document.getElementById('mini-critical').textContent = formatNumber(currentSummary.criticalVehicles, 0);
         document.getElementById('mini-idle-hours').textContent = formatHours(currentSummary.idleHours);
+        document.getElementById('mini-cost-total').textContent = formatCurrency(totalCost);
+        document.getElementById('mini-cost-km').textContent = formatCurrency(costPerKm);
+        document.getElementById('mini-diesel-ref').textContent = `Diesel de referencia: ${formatCurrency(dieselPrice)}/L`;
 
         document.getElementById('ops-idle').textContent = formatPercent(currentSummary.idlePct, 1);
         document.getElementById('ops-faixa').textContent = formatPercent(currentSummary.faixaVerdePct, 1);
@@ -2152,10 +2230,8 @@
         vehicles
             .slice()
             .sort((a, b) => {
-                if (a.status.label !== b.status.label) {
-                    const order = { 'Atencao': 0, 'Bom': 1, 'Elite': 2, 'Sem uso': 3 };
-                    return (order[a.status.label] ?? 9) - (order[b.status.label] ?? 9);
-                }
+                if (a.notaMedia !== b.notaMedia) return a.notaMedia - b.notaMedia;
+                if (b.excessoPct !== a.excessoPct) return b.excessoPct - a.excessoPct;
                 return a.notaMedia - b.notaMedia;
             })
             .forEach((vehicle) => {
@@ -2169,11 +2245,10 @@
                         <td>${formatNumber(vehicle.consumo, 0)} L</td>
                         <td>${formatNumber(vehicle.kml, 2)}</td>
                         <td>${formatNumber(vehicle.notaMedia, 1)}</td>
+                        <td><span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;padding:4px 8px;border-radius:999px;font-weight:800;${getGradeStyle(vehicle.grade)}">${vehicle.grade}</span></td>
                         <td>${formatPercent(vehicle.faixaVerdePct, 1)}</td>
                         <td>${formatPercent(vehicle.idlePct, 1)}</td>
                         <td style="color:${vehicle.excessoPct > 5 ? 'var(--danger)' : 'var(--text-main)'}; font-weight:700;">${formatPercent(vehicle.excessoPct, 1)}</td>
-                        <td>${formatNumber(vehicle.freadas100Km, 1)}</td>
-                        <td style="color:${vehicle.status.color}; font-weight:700;">${vehicle.status.label}</td>
                     </tr>
                 `;
             });
@@ -2298,7 +2373,10 @@
     });
 
     document.getElementById('csv-input').addEventListener('change', handleLocalUpload);
-    window.onload = carregarDadosOnline;
+    window.onload = () => {
+        initializeDieselInput();
+        carregarDadosOnline();
+    };
 </script>
 
 </body>
