@@ -761,6 +761,24 @@
             <div class="mini-card"><div class="mini-label">Nota critica</div><div class="mini-value" id="ops-criticos">0</div><div class="mini-sub">Equipamentos abaixo de 60 pontos</div></div>
         </div>
 
+        <div class="mini-grid">
+            <div class="mini-card"><div class="mini-label">Aproveit. embalo</div><div class="mini-value" id="ops-embalo">0,0%</div><div class="mini-sub">Uso de inercia da frota</div></div>
+            <div class="mini-card"><div class="mini-label">Freio motor</div><div class="mini-value" id="ops-freio-motor">0,0%</div><div class="mini-sub">Apoio de desaceleracao</div></div>
+            <div class="mini-card"><div class="mini-label">Piloto automatico</div><div class="mini-value" id="ops-piloto">0,0%</div><div class="mini-sub">Aderencia ao recurso</div></div>
+            <div class="mini-card"><div class="mini-label">Eco-Roll / I-Roll</div><div class="mini-value" id="ops-eco-roll">0,0%</div><div class="mini-sub">Uso de rolagem assistida</div></div>
+            <div class="mini-card"><div class="mini-label">Pedal ideal</div><div class="mini-value" id="ops-pedal-ideal">0,0%</div><div class="mini-sub">Conducao dentro do ideal</div></div>
+            <div class="mini-card"><div class="mini-label">Pedal atencao</div><div class="mini-value" id="ops-pedal-atencao">0,0%</div><div class="mini-sub">Pressao fora do ideal</div></div>
+            <div class="mini-card"><div class="mini-label">Pedal critico</div><div class="mini-value" id="ops-pedal-critico">0,0%</div><div class="mini-sub">Aceleracao agressiva</div></div>
+            <div class="mini-card"><div class="mini-label">Alta rotacao parado</div><div class="mini-value" id="ops-alta-rotacao">0,0%</div><div class="mini-sub">Motor parado em alta rotacao</div></div>
+        </div>
+
+        <div class="mini-grid">
+            <div class="mini-card"><div class="mini-label">Tempo em movimento</div><div class="mini-value" id="ops-movimento">0,0%</div><div class="mini-sub">Uso produtivo do equipamento</div></div>
+            <div class="mini-card"><div class="mini-label">Inicio faixa verde</div><div class="mini-value" id="ops-inicio-faixa">0,0%</div><div class="mini-sub">Entrada correta na faixa</div></div>
+            <div class="mini-card"><div class="mini-label">Final faixa verde</div><div class="mini-value" id="ops-final-faixa">0,0%</div><div class="mini-sub">Sustentacao na faixa</div></div>
+            <div class="mini-card"><div class="mini-label">Acima do verde</div><div class="mini-value" id="ops-acima-verde">0,0%</div><div class="mini-sub">Aceleracao acima do recomendado</div></div>
+        </div>
+
         <div class="charts-grid-2">
             <div class="chart-box">
                 <div class="chart-head"><strong>Top 10 equipamentos por eficiencia</strong><span id="ops-top-label">Melhores equipamentos no filtro</span></div>
@@ -1122,6 +1140,22 @@
 
     function safeDivide(numerator, denominator) {
         return denominator ? numerator / denominator : 0;
+    }
+
+    function weightedAverage(records, field, weightResolver) {
+        let weightedTotal = 0;
+        let totalWeight = 0;
+
+        records.forEach((record) => {
+            const value = Number(record[field] || 0);
+            if (!Number.isFinite(value) || value <= 0) return;
+
+            const weight = Math.max(Number(weightResolver(record) || 0), 1);
+            weightedTotal += value * weight;
+            totalWeight += weight;
+        });
+
+        return totalWeight ? weightedTotal / totalWeight : 0;
     }
 
     function sanitizeFileName(value) {
@@ -1498,8 +1532,19 @@
                 const idleHours = parseDurationToHours(getField(row, ['total motor ligado parado']));
                 const excessoHours = parseDurationToHours(getField(row, ['excesso de velocidade']));
                 const idlePct = parsePercent(getField(row, ['% total motor ligado parado']));
+                const idleHighRpmPct = parsePercent(getField(row, ['% motor ligado parado em alta rotacao']));
                 const faixaVerdePct = parsePercent(getField(row, ['% faixa verde']));
+                const inicioFaixaPct = parsePercent(getField(row, ['% inicio da faixa verde']));
+                const finalFaixaPct = parsePercent(getField(row, ['% final da faixa verde']));
+                const acimaVerdePct = parsePercent(getField(row, ['% acelerando acima do verde']));
+                const embaloPct = parsePercent(getField(row, ['% aproveitamento de embalo']));
                 const excessoPct = parsePercent(getField(row, ['% excesso de velocidade']));
+                const freioMotorPct = parsePercent(getField(row, ['% freio motor']));
+                const pilotoAutomaticoPct = parsePercent(getField(row, ['% piloto automatico']));
+                const ecoRollPct = parsePercent(getField(row, ['% eco-roll/i-roll']));
+                const pedalIdealPct = parsePercent(getField(row, ['% pedal ideal']));
+                const pedalAtencaoPct = parsePercent(getField(row, ['% pedal atencao']));
+                const pedalCriticoPct = parsePercent(getField(row, ['% pedal critico']));
                 const freadas100Km = parseLocaleNumber(getField(row, ['freadas a cada 100 km']));
 
                 const hasRelevantData = km > 0 || consumo > 0 || nota > 0 || tempoMovimentoHours > 0 || faixaVerdeHours > 0;
@@ -1523,9 +1568,20 @@
                     tempoMovimentoHours,
                     idleHours,
                     idlePct,
+                    idleHighRpmPct,
                     excessoHours,
                     faixaVerdePct,
+                    inicioFaixaPct,
+                    finalFaixaPct,
+                    acimaVerdePct,
+                    embaloPct,
                     excessoPct,
+                    freioMotorPct,
+                    pilotoAutomaticoPct,
+                    ecoRollPct,
+                    pedalIdealPct,
+                    pedalAtencaoPct,
+                    pedalCriticoPct,
                     freadas100Km
                 });
             });
@@ -1786,6 +1842,8 @@
         const healthyVehicles = activeVehicles.filter((item) => item.status.label === 'Bom' || item.status.label === 'Elite');
         const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         activeVehicles.forEach((vehicle) => { distribution[vehicle.grade] += 1; });
+        const movimentoWeight = (item) => item.tempoMovimentoHours || item.km || 1;
+        const idleWeight = (item) => item.idleHours || item.tempoMovimentoHours || 1;
 
         return {
             records,
@@ -1806,7 +1864,18 @@
             criticalVehicles: criticalVehicles.length,
             metaAtingidaPct: safeDivide(healthyVehicles.length, activeVehicles.length) * 100,
             distMedia: safeDivide(km, activeVehicles.length),
-            distribution
+            distribution,
+            idleHighRpmPct: weightedAverage(records, 'idleHighRpmPct', idleWeight),
+            inicioFaixaPct: weightedAverage(records, 'inicioFaixaPct', movimentoWeight),
+            finalFaixaPct: weightedAverage(records, 'finalFaixaPct', movimentoWeight),
+            acimaVerdePct: weightedAverage(records, 'acimaVerdePct', movimentoWeight),
+            embaloPct: weightedAverage(records, 'embaloPct', movimentoWeight),
+            freioMotorPct: weightedAverage(records, 'freioMotorPct', movimentoWeight),
+            pilotoAutomaticoPct: weightedAverage(records, 'pilotoAutomaticoPct', movimentoWeight),
+            ecoRollPct: weightedAverage(records, 'ecoRollPct', movimentoWeight),
+            pedalIdealPct: weightedAverage(records, 'pedalIdealPct', movimentoWeight),
+            pedalAtencaoPct: weightedAverage(records, 'pedalAtencaoPct', movimentoWeight),
+            pedalCriticoPct: weightedAverage(records, 'pedalCriticoPct', movimentoWeight)
         };
     }
 
@@ -2120,6 +2189,18 @@
         document.getElementById('ops-faixa').textContent = formatPercent(currentSummary.faixaVerdePct, 1);
         document.getElementById('ops-excesso').textContent = formatPercent(currentSummary.excessoPct, 1);
         document.getElementById('ops-criticos').textContent = formatNumber(currentSummary.criticalVehicles, 0);
+        document.getElementById('ops-embalo').textContent = formatPercent(currentSummary.embaloPct, 1);
+        document.getElementById('ops-freio-motor').textContent = formatPercent(currentSummary.freioMotorPct, 1);
+        document.getElementById('ops-piloto').textContent = formatPercent(currentSummary.pilotoAutomaticoPct, 1);
+        document.getElementById('ops-eco-roll').textContent = formatPercent(currentSummary.ecoRollPct, 1);
+        document.getElementById('ops-pedal-ideal').textContent = formatPercent(currentSummary.pedalIdealPct, 1);
+        document.getElementById('ops-pedal-atencao').textContent = formatPercent(currentSummary.pedalAtencaoPct, 1);
+        document.getElementById('ops-pedal-critico').textContent = formatPercent(currentSummary.pedalCriticoPct, 1);
+        document.getElementById('ops-alta-rotacao').textContent = formatPercent(currentSummary.idleHighRpmPct, 1);
+        document.getElementById('ops-movimento').textContent = formatPercent(currentSummary.movimentoPct, 1);
+        document.getElementById('ops-inicio-faixa').textContent = formatPercent(currentSummary.inicioFaixaPct, 1);
+        document.getElementById('ops-final-faixa').textContent = formatPercent(currentSummary.finalFaixaPct, 1);
+        document.getElementById('ops-acima-verde').textContent = formatPercent(currentSummary.acimaVerdePct, 1);
 
         renderBadge('comp-consumo', currentSummary.consumo, previousSummary.consumo, false);
         renderBadge('comp-eficiencia', currentSummary.eficiencia, previousSummary.eficiencia, true);
