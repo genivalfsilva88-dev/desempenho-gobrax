@@ -832,6 +832,7 @@
                             <th>Consumo</th>
                             <th>KM/L</th>
                             <th>Nota</th>
+                            <th>Class.</th>
                             <th>Faixa</th>
                             <th>Marcha lenta</th>
                             <th>Excesso vel.</th>
@@ -885,6 +886,14 @@
     let chartIdleImpact = null;
     let DETALHE_EXPANDIDO = false;
     let ACTIVE_PAGE = 'executivo';
+    let DATASET_META = {
+        source: 'unknown',
+        generatedAt: null,
+        loadedAt: null,
+        label: 'Sem base carregada',
+        sheets: 0,
+        validRows: 0
+    };
 
     function setActivePage(page, button) {
         ACTIVE_PAGE = page;
@@ -1283,12 +1292,14 @@
         try {
             const bundledSheets = getBundledSheets();
             if (bundledSheets.length) {
-                processarWorkbook(bundledSheets);
+                processarWorkbook(bundledSheets, {
+                    source: 'bundle',
+                    generatedAt: window.GOBRAX_DATA?.generatedAt || null,
+                    loadedAt: new Date().toISOString(),
+                    label: 'Base local embarcada',
+                    sheets: bundledSheets.length
+                });
                 setStatus('manual');
-                const generatedAt = window.GOBRAX_DATA?.generatedAt;
-                if (generatedAt) {
-                    document.getElementById('last-update-pill').textContent = `Base local ${new Date(generatedAt).toLocaleString('pt-BR')}`;
-                }
                 return;
             }
 
@@ -1317,7 +1328,13 @@
                 return;
             }
 
-            processarWorkbook(availableSheets);
+            processarWorkbook(availableSheets, {
+                source: 'online',
+                generatedAt: null,
+                loadedAt: new Date().toISOString(),
+                label: 'Google Sheets publicado',
+                sheets: availableSheets.length
+            });
             setStatus('online');
         } catch (error) {
             console.error(error);
@@ -1339,7 +1356,16 @@
                     header: true,
                     skipEmptyLines: true,
                     complete: (result) => {
-                        processarWorkbook([{ name: inferMonthLabel(file.name.replace(/\.[^.]+$/, '')), order: inferMonthOrder(file.name), rows: result.data }]);
+                        processarWorkbook(
+                            [{ name: inferMonthLabel(file.name.replace(/\.[^.]+$/, '')), order: inferMonthOrder(file.name), rows: result.data }],
+                            {
+                                source: 'upload',
+                                generatedAt: null,
+                                loadedAt: new Date().toISOString(),
+                                label: `Arquivo local: ${file.name}`,
+                                sheets: 1
+                            }
+                        );
                         setStatus('manual');
                     },
                     error: (error) => {
@@ -1363,7 +1389,13 @@
                 return;
             }
 
-            processarWorkbook(sheets);
+            processarWorkbook(sheets, {
+                source: 'upload',
+                generatedAt: null,
+                loadedAt: new Date().toISOString(),
+                label: `Arquivo local: ${file.name}`,
+                sheets: sheets.length
+            });
             setStatus('manual');
         } catch (error) {
             console.error(error);
@@ -1371,7 +1403,7 @@
         }
     }
 
-    function processarWorkbook(sheets) {
+    function processarWorkbook(sheets, meta = {}) {
         const dataset = [];
         const periodMap = new Map();
 
@@ -1432,6 +1464,14 @@
         });
 
         GLOBAL_DATA = dataset;
+        DATASET_META = {
+            source: meta.source || 'unknown',
+            generatedAt: meta.generatedAt || null,
+            loadedAt: meta.loadedAt || new Date().toISOString(),
+            label: meta.label || 'Base carregada',
+            sheets: meta.sheets || sheets.length,
+            validRows: dataset.length
+        };
         PERIODS_LIST = Array.from(periodMap.entries())
             .sort((a, b) => b[1] - a[1])
             .map(([label]) => label)
@@ -1818,6 +1858,7 @@
                         <td>${formatNumber(vehicle.consumo, 0)} L</td>
                         <td>${formatNumber(vehicle.kml, 2)}</td>
                         <td>${formatNumber(vehicle.notaMedia, 1)}</td>
+                        <td style="font-weight:800;">${vehicle.grade}</td>
                         <td>${formatPercent(vehicle.faixaVerdePct, 1)}</td>
                         <td style="color:${vehicle.excessoPct > 5 ? 'var(--danger)' : 'var(--text-main)'}; font-weight:700;">${formatPercent(vehicle.excessoPct, 1)}</td>
                         <td style="color:${vehicle.status.color}; font-weight:700;">${vehicle.status.label}</td>
@@ -1961,8 +2002,11 @@
 
     function atualizarTela(currentSummary, previousSummary, currentRecords, context) {
         const periodLabel = context.period === 'all' ? 'Consolidado' : context.period;
-        document.getElementById('last-update-pill').textContent = `Atualizado em ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
-        document.getElementById('period-summary-pill').textContent = `Periodo: ${periodLabel}${context.group !== 'all' ? ` | Grupo: ${context.group}` : ''}${context.vehicle !== 'all' ? ` | Equip.: ${context.vehicle}` : ''}`;
+        const baseStamp = DATASET_META.generatedAt
+            ? `Base ${new Date(DATASET_META.generatedAt).toLocaleString('pt-BR')}`
+            : `Carga ${new Date(DATASET_META.loadedAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+        document.getElementById('last-update-pill').textContent = `${DATASET_META.label} | ${baseStamp}`;
+        document.getElementById('period-summary-pill').textContent = `Periodo: ${periodLabel}${context.group !== 'all' ? ` | Grupo: ${context.group}` : ''}${context.vehicle !== 'all' ? ` | Equip.: ${context.vehicle}` : ''} | ${formatNumber(currentRecords.length, 0)} registros validos`;
         document.querySelectorAll('.month-chip').forEach((chip) => chip.classList.toggle('active', chip.textContent === context.period));
 
         document.getElementById('hero-idle').textContent = formatPercent(currentSummary.idlePct, 1);
@@ -2137,8 +2181,22 @@
 
     function updateCharts(currentSummary, context) {
         const trendLabels = PERIODS_LIST.slice().reverse();
-        const trendEfficiency = trendLabels.map((period) => calcResumo(GLOBAL_DATA.filter((item) => item.periodLabel === period)).eficiencia);
-        const trendScore = trendLabels.map((period) => calcResumo(GLOBAL_DATA.filter((item) => item.periodLabel === period)).notaMedia);
+        const trendEfficiency = trendLabels.map((period) => {
+            const filtered = applySecondaryFilters(
+                GLOBAL_DATA.filter((item) => item.periodLabel === period),
+                context.group,
+                context.vehicle
+            );
+            return calcResumo(filtered).eficiencia;
+        });
+        const trendScore = trendLabels.map((period) => {
+            const filtered = applySecondaryFilters(
+                GLOBAL_DATA.filter((item) => item.periodLabel === period),
+                context.group,
+                context.vehicle
+            );
+            return calcResumo(filtered).notaMedia;
+        });
 
         const trendContext = document.getElementById('chartTrend').getContext('2d');
         if (chartTrend) chartTrend.destroy();
