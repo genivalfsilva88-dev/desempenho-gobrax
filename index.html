@@ -922,9 +922,9 @@
                 <div class="hero-sub" id="hero-idle-sub">Marcha lenta media da frota</div>
             </div>
             <div class="hero-card">
-                <div class="hero-label">Oportunidade</div>
+                <div class="hero-label">Potencial financeiro</div>
                 <div class="hero-value" id="hero-opportunity">0</div>
-                <div class="hero-sub" id="hero-opportunity-sub">Equipamentos abaixo do padrao operacional</div>
+                <div class="hero-sub" id="hero-opportunity-sub">Economia estimada frente a meta</div>
             </div>
             <div class="hero-card">
                 <div class="hero-label">Projecao</div>
@@ -986,8 +986,8 @@
                         <div id="compare-faixa-pill" class="delta-pill delta-neutral">Estavel</div>
                     </div>
                     <div class="compare-item">
-                        <div><strong>Excesso de velocidade</strong><span id="compare-excesso-text">Aguardando dados</span></div>
-                        <div id="compare-excesso-pill" class="delta-pill delta-neutral">Estavel</div>
+                        <div><strong>Marcha lenta</strong><span id="compare-idle-text">Aguardando dados</span></div>
+                        <div id="compare-idle-pill" class="delta-pill delta-neutral">Estavel</div>
                     </div>
                     <div class="compare-item">
                         <div><strong>KM total rodado</strong><span id="compare-km-text">Aguardando dados</span></div>
@@ -1001,7 +1001,7 @@
             <div class="mini-card"><div class="mini-label">Meta atingida</div><div class="mini-value" id="mini-meta">0%</div><div class="mini-sub" id="mini-meta-sub">Metas por veiculo nao carregadas</div></div>
             <div class="mini-card"><div class="mini-label">Potencial de melhoria</div><div class="mini-value" id="mini-critical">0</div><div class="mini-sub">Equipamentos criticos no filtro</div></div>
             <div class="mini-card"><div class="mini-label">Marcha lenta</div><div class="mini-value" id="mini-idle-hours">0h</div><div class="mini-sub">Tempo acumulado em marcha lenta</div></div>
-            <div class="mini-card"><div class="mini-label">Excesso vel.</div><div class="mini-value" id="kpi-excesso">0,0%</div><div class="mini-sub" id="kpi-excesso-horas">0h em excesso</div></div>
+            <div class="mini-card"><div class="mini-label">Abaixo da meta</div><div class="mini-value" id="mini-below-meta">0</div><div class="mini-sub" id="mini-below-meta-sub">Equipamentos abaixo da meta de consumo</div></div>
             <div class="mini-card"><div class="mini-label">Custo estimado</div><div class="mini-value" id="mini-cost-total">R$ 0,00</div><div class="mini-sub">Consumo total x diesel informado</div></div>
             <div class="mini-card"><div class="mini-label">Custo por km</div><div class="mini-value" id="mini-cost-km">R$ 0,00</div><div class="mini-sub" id="mini-diesel-ref">Diesel de referencia: R$ 0,00/L</div></div>
         </div>
@@ -1065,10 +1065,10 @@
                         <div class="ops-indicator-meter"><span id="ops-ind-acima-verde-bar" style="width:0%"></span></div>
                     </div>
                     <div class="ops-indicator-card">
-                        <div id="ops-ind-excesso" class="ops-indicator-value">0%</div>
-                        <div id="ops-ind-excesso-time" class="ops-indicator-time">00:00:00</div>
-                        <div class="ops-indicator-label">Excesso de velocidade</div>
-                        <div class="ops-indicator-meter"><span id="ops-ind-excesso-bar" style="width:0%"></span></div>
+                        <div id="ops-ind-freio-motor" class="ops-indicator-value">0%</div>
+                        <div id="ops-ind-freio-motor-time" class="ops-indicator-time">00:00:00</div>
+                        <div class="ops-indicator-label">Freio motor</div>
+                        <div class="ops-indicator-meter"><span id="ops-ind-freio-motor-bar" style="width:0%"></span></div>
                     </div>
                     <div class="ops-indicator-card">
                         <div id="ops-ind-piloto" class="ops-indicator-value">0%</div>
@@ -1128,6 +1128,10 @@
                     <div class="ops-stat-item"><div class="ops-stat-label">Media do bordo</div><div id="ops-stat-board" class="ops-stat-value">0 km/l</div><div class="ops-stat-sub">Computador de bordo</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Odometro</div><div id="ops-stat-odometro" class="ops-stat-value">0</div><div class="ops-stat-sub">Leitura mais recente</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Tempo em movimento</div><div id="ops-stat-movimento" class="ops-stat-value">0h</div><div class="ops-stat-sub">Uso produtivo</div></div>
+                    <div class="ops-stat-item"><div class="ops-stat-label">Meta</div><div id="ops-stat-meta" class="ops-stat-value">--</div><div id="ops-stat-meta-sub" class="ops-stat-sub">Meta cadastrada para o filtro</div></div>
+                    <div class="ops-stat-item"><div class="ops-stat-label">Desvio da meta</div><div id="ops-stat-gap" class="ops-stat-value">--</div><div id="ops-stat-gap-sub" class="ops-stat-sub">Realizado contra meta de consumo</div></div>
+                    <div class="ops-stat-item"><div class="ops-stat-label">Motorista</div><div id="ops-stat-driver" class="ops-stat-value">--</div><div id="ops-stat-driver-sub" class="ops-stat-sub">Alocacao atual do equipamento</div></div>
+                    <div class="ops-stat-item"><div class="ops-stat-label">Potencial de economia</div><div id="ops-stat-saving" class="ops-stat-value">R$ 0,00</div><div id="ops-stat-saving-sub" class="ops-stat-sub">Ganho estimado frente a meta</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Custo estimado</div><div id="ops-stat-cost" class="ops-stat-value">R$ 0,00</div><div class="ops-stat-sub">Com diesel informado</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Custo por km</div><div id="ops-stat-cost-km" class="ops-stat-value">R$ 0,00</div><div class="ops-stat-sub">Base economica do filtro</div></div>
                 </div>
@@ -1140,7 +1144,7 @@
                 <div class="chart-body"><canvas id="chartTopVehicles"></canvas></div>
             </div>
             <div class="chart-box">
-                <div class="chart-head"><strong>Comparativo por grupo</strong><span id="ops-bottom-label">Leitura por operacao</span></div>
+                <div class="chart-head"><strong>Fotografia operacional</strong><span id="ops-bottom-label">Leitura por operacao</span></div>
                 <div class="chart-body"><canvas id="chartBottomVehicles"></canvas></div>
             </div>
         </div>
@@ -1154,7 +1158,7 @@
 
         <div class="charts-grid-2">
             <div class="box glass">
-                <div class="box-header">Equipamentos que precisam de atencao <small>Priorizacao por nota, excesso e marcha lenta</small></div>
+                <div class="box-header">Equipamentos que precisam de atencao <small>Priorizacao por meta, nota e marcha lenta</small></div>
                 <div class="table-wrap" style="padding:12px 16px 16px;">
                     <table id="table-attention">
                         <thead>
@@ -1210,11 +1214,13 @@
                             <th>KM</th>
                             <th>Consumo</th>
                             <th>KM/L</th>
+                            <th>Meta</th>
+                            <th>Δ Meta</th>
                             <th>Nota</th>
                             <th>Class.</th>
+                            <th>Motorista</th>
                             <th>Faixa</th>
                             <th>Marcha lenta</th>
-                            <th>Excesso vel.</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -1334,8 +1340,7 @@
 
             const idxNota = headers.findIndex((h) => /NOTA/i.test(h));
             const idxFaixa = headers.findIndex((h) => /FAIXA/i.test(h));
-            const idxExcesso = headers.findIndex((h) => /EXCESSO/i.test(h));
-            const idxStatus = headers.findIndex((h) => /STATUS/i.test(h));
+            const idxDeltaMeta = headers.findIndex((h) => /META/i.test(h) && !/^META$/i.test(h));
 
             const parseBRNumber = (value) => {
                 if (value == null) return NaN;
@@ -1388,26 +1393,13 @@
                         }
                     }
 
-                    if (idxExcesso >= 0 && col === idxExcesso) {
-                        const excesso = parseBRNumber(rows[row][idxExcesso]);
-                        if (excesso <= 2.5) {
+                    if (idxDeltaMeta >= 0 && col === idxDeltaMeta) {
+                        const deltaMeta = parseBRNumber(rows[row][idxDeltaMeta]);
+                        if (deltaMeta >= 0) {
                             data.cell.styles.fillColor = [220, 252, 231];
                             data.cell.styles.textColor = [22, 101, 52];
                             data.cell.styles.fontStyle = 'bold';
-                        } else if (excesso > 5) {
-                            data.cell.styles.fillColor = [254, 226, 226];
-                            data.cell.styles.textColor = [153, 27, 27];
-                            data.cell.styles.fontStyle = 'bold';
-                        }
-                    }
-
-                    if (idxStatus >= 0 && col === idxStatus) {
-                        const status = rows[row][idxStatus].toLowerCase();
-                        if (status.includes('elite') || status.includes('bom')) {
-                            data.cell.styles.fillColor = [220, 252, 231];
-                            data.cell.styles.textColor = [22, 101, 52];
-                            data.cell.styles.fontStyle = 'bold';
-                        } else if (status.includes('atencao')) {
+                        } else {
                             data.cell.styles.fillColor = [254, 226, 226];
                             data.cell.styles.textColor = [153, 27, 27];
                             data.cell.styles.fontStyle = 'bold';
@@ -1436,6 +1428,10 @@
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, ' ')
             .trim();
+    }
+
+    function normalizeDisplayLabel(value) {
+        return String(value || '').replace(/MarÃ§o/g, 'Março');
     }
 
     function parseLocaleNumber(value) {
@@ -1493,6 +1489,17 @@
 
     function formatPercent(value, decimals = 1) {
         return `${formatNumber(value, decimals)}%`;
+    }
+
+    function formatSigned(value, decimals = 2, suffix = '') {
+        const numeric = Number(value || 0);
+        const prefix = numeric > 0 ? '+' : numeric < 0 ? '-' : '';
+        return `${prefix}${formatNumber(Math.abs(numeric), decimals)}${suffix}`;
+    }
+
+    function formatMetricOrDash(value, decimals = 2, suffix = '') {
+        const numeric = Number(value || 0);
+        return numeric > 0 ? `${formatNumber(numeric, decimals)}${suffix}` : '--';
     }
 
     function formatCurrency(value) {
@@ -1658,13 +1665,13 @@
     function inferMonthLabel(name) {
         const normalized = normalizeKey(name);
         const match = SHEET_CONFIG.find((sheet) => normalizeKey(sheet.name) === normalized || normalizeKey(sheet.sourceName) === normalized);
-        return match ? match.name : normalizeText(name) || 'Importado';
+        return normalizeDisplayLabel(match ? match.name : normalizeText(name) || 'Importado');
     }
 
     function resolveVehicleStatus(vehicle) {
         if (vehicle.km <= 0 && vehicle.consumo <= 0) return STATUS_RULES.semUso;
-        if (vehicle.notaMedia >= 80 && vehicle.faixaVerdePct >= 85 && vehicle.excessoPct <= 2.5) return STATUS_RULES.elite;
-        if (vehicle.notaMedia >= 60 && vehicle.faixaVerdePct >= 70 && vehicle.excessoPct <= 5) return STATUS_RULES.bom;
+        if (vehicle.notaMedia >= 80 && vehicle.faixaVerdePct >= 85 && vehicle.idlePct <= 20) return STATUS_RULES.elite;
+        if (vehicle.notaMedia >= 60 && vehicle.faixaVerdePct >= 70 && vehicle.idlePct <= 30) return STATUS_RULES.bom;
         return STATUS_RULES.atencao;
     }
 
@@ -2241,6 +2248,9 @@
             const faixaVerdePct = safeDivide(vehicle.faixaVerdeHours, vehicle.movimentoHours) * 100;
             const excessoPct = safeDivide(vehicle.excessoHours, vehicle.movimentoHours) * 100;
             const notaMedia = safeDivide(vehicle.notaTotal, vehicle.notaCount);
+            const expectedConsumo = vehicle.meta > 0 ? safeDivide(vehicle.km, vehicle.meta) : 0;
+            const potencialLitros = vehicle.meta > 0 ? Math.max(vehicle.consumo - expectedConsumo, 0) : 0;
+            const metaGap = vehicle.meta > 0 ? (kmlCalculado - vehicle.meta) : 0;
             const status = resolveVehicleStatus({
                 ...vehicle,
                 kml: kmlCalculado,
@@ -2256,6 +2266,9 @@
                 idlePct: safeDivide(vehicle.idlePctWeighted, vehicle.idlePctBase) || safeDivide(vehicle.idleHours, vehicle.movimentoHours + vehicle.idleHours) * 100,
                 faixaVerdePct,
                 excessoPct,
+                expectedConsumo,
+                potencialLitros,
+                metaGap,
                 freadas100Km: safeDivide(vehicle.freadasTotal, vehicle.freadasBase),
                 grade: gradeFromScore(notaMedia),
                 status
@@ -2315,6 +2328,15 @@
         const criticalVehicles = activeVehicles.filter((item) => item.notaMedia > 0 && item.notaMedia < 60);
         const metaVehicles = activeVehicles.filter((item) => item.meta > 0 && item.km > 0 && item.consumo > 0);
         const metaHitVehicles = metaVehicles.filter((item) => item.kml >= item.meta);
+        const belowMetaVehicles = metaVehicles.filter((item) => item.metaGap < 0);
+        const motoristaVehicles = activeVehicles.filter((item) => item.motorista).length;
+        const potencialLitros = belowMetaVehicles.reduce((sum, item) => sum + item.potencialLitros, 0);
+        const metaGapMedio = metaVehicles.length
+            ? metaVehicles.reduce((sum, item) => sum + item.metaGap, 0) / metaVehicles.length
+            : 0;
+        const metaMedia = metaVehicles.length
+            ? metaVehicles.reduce((sum, item) => sum + item.meta, 0) / metaVehicles.length
+            : 0;
         const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         activeVehicles.forEach((vehicle) => { distribution[vehicle.grade] += 1; });
         const movimentoWeight = (item) => item.tempoMovimentoHours || item.km || 1;
@@ -2339,8 +2361,14 @@
             criticalVehicles: criticalVehicles.length,
             metaVehicles: metaVehicles.length,
             metaHitVehicles: metaHitVehicles.length,
+            belowMetaVehicles: belowMetaVehicles.length,
             metaAtingidaPct: safeDivide(metaHitVehicles.length, metaVehicles.length) * 100,
             metaCoveragePct: safeDivide(metaVehicles.length, activeVehicles.length) * 100,
+            metaMedia,
+            metaGapMedio,
+            potencialLitros,
+            motoristaVehicles,
+            motoristaCoveragePct: safeDivide(motoristaVehicles, activeVehicles.length) * 100,
             distMedia: safeDivide(km, activeVehicles.length),
             distribution,
             idleHighRpmPct: weightedAverage(records, 'idleHighRpmPct', idleWeight),
@@ -2383,9 +2411,9 @@
         const focusKm = scopedRecords.reduce((sum, item) => sum + item.km, 0);
         const focusConsumo = scopedRecords.reduce((sum, item) => sum + item.consumo, 0);
         const focusIdleHours = scopedRecords.reduce((sum, item) => sum + item.idleHours, 0);
-        const focusExcessoHours = scopedRecords.reduce((sum, item) => sum + item.excessoHours, 0);
         const focusFaixaHours = scopedRecords.reduce((sum, item) => sum + item.faixaVerdeHours, 0);
         const focusMovimentoHours = scopedRecords.reduce((sum, item) => sum + item.tempoMovimentoHours, 0);
+        const focusFreioMotorHours = scopedRecords.reduce((sum, item) => sum + item.freioMotorHours, 0);
         const pedalIdealHours = scopedRecords.reduce((sum, item) => sum + item.pedalIdealHours, 0);
         const pedalAtencaoHours = scopedRecords.reduce((sum, item) => sum + item.pedalAtencaoHours, 0);
         const pedalCriticoHours = scopedRecords.reduce((sum, item) => sum + item.pedalCriticoHours, 0);
@@ -2410,6 +2438,7 @@
             groupsCount: currentSummary.groups.length,
             metaVehicles: currentSummary.metaVehicles,
             metaHitVehicles: currentSummary.metaHitVehicles,
+            motoristaVehicles: currentSummary.motoristaVehicles,
             filterGroup: context.group,
             km: focusKm,
             consumo: focusConsumo,
@@ -2419,6 +2448,10 @@
             mediaBordo: weightedAverage(scopedRecords, 'mediaBordo', kmWeight),
             odometro: Math.max(...scopedRecords.map((item) => item.odometro || 0), 0),
             movimentoHours: focusMovimentoHours,
+            meta: vehicle ? (vehicle.meta || 0) : (currentSummary.metaMedia || 0),
+            metaGap: vehicle ? vehicle.metaGap : currentSummary.metaGapMedio,
+            potencialLitros: vehicle ? vehicle.potencialLitros : currentSummary.potencialLitros,
+            motorista: vehicle?.motorista || '',
             pedalIdealPct: weightedAverage(scopedRecords, 'pedalIdealPct', movementWeight),
             pedalAtencaoPct: weightedAverage(scopedRecords, 'pedalAtencaoPct', movementWeight),
             pedalCriticoPct: weightedAverage(scopedRecords, 'pedalCriticoPct', movementWeight),
@@ -2459,12 +2492,12 @@
                     inverse: true
                 },
                 {
-                    valueId: 'ops-ind-excesso',
-                    timeId: 'ops-ind-excesso-time',
-                    barId: 'ops-ind-excesso-bar',
-                    pct: weightedAverage(scopedRecords, 'excessoPct', movementWeight),
-                    hours: focusExcessoHours,
-                    inverse: true
+                    valueId: 'ops-ind-freio-motor',
+                    timeId: 'ops-ind-freio-motor-time',
+                    barId: 'ops-ind-freio-motor-bar',
+                    pct: weightedAverage(scopedRecords, 'freioMotorPct', movementWeight),
+                    hours: focusFreioMotorHours,
+                    inverse: false
                 },
                 {
                     valueId: 'ops-ind-piloto',
@@ -2514,6 +2547,10 @@
 
         document.getElementById('ops-score-value').textContent = formatNumber(focus.score, 0);
         document.getElementById('ops-score-grade').textContent = `Classe ${focus.grade}`;
+        const metaSub = document.getElementById('ops-stat-meta-sub');
+        const gapSub = document.getElementById('ops-stat-gap-sub');
+        const driverSub = document.getElementById('ops-stat-driver-sub');
+        const savingSub = document.getElementById('ops-stat-saving-sub');
         if (focus.scope === 'individual') {
             document.getElementById('ops-meta-frota-label').textContent = 'Equip.';
             document.getElementById('ops-meta-placa-label').textContent = 'Placa';
@@ -2523,6 +2560,10 @@
             document.getElementById('ops-meta-placa').textContent = focus.plate;
             document.getElementById('ops-meta-modelo').textContent = `${focus.model}${focus.traction !== '-' ? ` | ${focus.traction}` : ''}`;
             document.getElementById('ops-meta-grupo').textContent = focus.group;
+            metaSub.textContent = 'Meta cadastrada para o equipamento';
+            gapSub.textContent = 'Diferenca entre km/l realizado e alvo';
+            driverSub.textContent = 'Motorista alocado ao equipamento';
+            savingSub.textContent = 'Ganho estimado se atingir a meta';
         } else {
             document.getElementById('ops-meta-frota-label').textContent = 'Frota';
             document.getElementById('ops-meta-placa-label').textContent = 'Metas';
@@ -2534,6 +2575,10 @@
                 : 'Sem metas carregadas';
             document.getElementById('ops-meta-modelo').textContent = `${formatNumber(focus.groupsCount, 0)} grupos no filtro`;
             document.getElementById('ops-meta-grupo').textContent = focus.filterGroup === 'all' ? 'Todos os grupos' : focus.filterGroup;
+            metaSub.textContent = 'Meta media dos equipamentos com alvo';
+            gapSub.textContent = 'Desvio medio da frota contra as metas';
+            driverSub.textContent = 'Cobertura da aba Motorista por veiculo';
+            savingSub.textContent = 'Economia potencial dos equipamentos abaixo da meta';
         }
         document.getElementById('ops-page-copy').textContent = focus.copy;
         document.getElementById('ops-indicators-copy').textContent = focus.copy;
@@ -2578,6 +2623,14 @@
         document.getElementById('ops-stat-board').textContent = `${formatNumber(focus.mediaBordo, 2)} km/l`;
         document.getElementById('ops-stat-odometro').textContent = formatNumber(focus.odometro, 0);
         document.getElementById('ops-stat-movimento').textContent = formatClockDuration(focus.movimentoHours);
+        document.getElementById('ops-stat-meta').textContent = formatMetricOrDash(focus.meta, 2, ' km/l');
+        const gapEl = document.getElementById('ops-stat-gap');
+        gapEl.textContent = focus.meta > 0 ? formatSigned(focus.metaGap, 2, ' km/l') : '--';
+        gapEl.style.color = focus.meta > 0 ? (focus.metaGap >= 0 ? 'var(--success)' : 'var(--danger)') : 'var(--text-main)';
+        document.getElementById('ops-stat-driver').textContent = focus.scope === 'individual'
+            ? (focus.motorista || 'Nao alocado')
+            : `${formatNumber(focus.motoristaVehicles, 0)}/${formatNumber(focus.activeVehicles, 0)} alocados`;
+        document.getElementById('ops-stat-saving').textContent = formatCurrency(focus.potencialLitros * getDieselPrice());
         document.getElementById('ops-stat-cost').textContent = formatCurrency(focus.custo);
         document.getElementById('ops-stat-cost-km').textContent = formatCurrency(focus.custoKm);
     }
@@ -2858,12 +2911,17 @@
 
         document.getElementById('hero-idle').textContent = formatPercent(currentSummary.idlePct, 1);
         document.getElementById('hero-idle-sub').textContent = `${formatHours(currentSummary.idleHours)} acumuladas em marcha lenta`;
-        document.getElementById('hero-opportunity').textContent = formatNumber(currentSummary.criticalVehicles, 0);
-        document.getElementById('hero-opportunity-sub').textContent = 'Equipamentos abaixo de 60 pontos';
+        document.getElementById('hero-opportunity').textContent = formatCurrency(currentSummary.potencialLitros * dieselPrice);
+        document.getElementById('hero-opportunity-sub').textContent = currentSummary.metaVehicles > 0
+            ? `${formatNumber(currentSummary.belowMetaVehicles, 0)} veiculos abaixo da meta | ${formatNumber(currentSummary.potencialLitros, 0)} L de oportunidade`
+            : 'Cadastre metas por veiculo para estimar oportunidade financeira';
         document.getElementById('hero-efficiency').textContent = `${formatNumber(currentSummary.eficiencia, 2)} km/l`;
         document.getElementById('hero-efficiency-sub').textContent = `Media de ${formatNumber(currentSummary.activeVehicles, 0)} equipamentos com leitura`;
 
         document.getElementById('kpi-active').textContent = formatNumber(currentSummary.activeVehicles, 0);
+        document.getElementById('kpi-active-sub').textContent = currentSummary.metaVehicles > 0
+            ? `${formatNumber(currentSummary.metaVehicles, 0)} equipamentos com meta cadastrada`
+            : 'Equipamentos com leitura';
         document.getElementById('kpi-km').textContent = `${formatNumber(currentSummary.km, 0)} km`;
         document.getElementById('kpi-consumo').textContent = `${formatNumber(currentSummary.consumo, 0)} L`;
         document.getElementById('kpi-eficiencia').textContent = formatNumber(currentSummary.eficiencia, 2);
@@ -2871,8 +2929,6 @@
         document.getElementById('kpi-dist-media').textContent = `${formatNumber(currentSummary.distMedia, 0)} km`;
         document.getElementById('kpi-faixa').textContent = formatPercent(currentSummary.faixaVerdePct, 1);
         document.getElementById('kpi-idle').textContent = formatPercent(currentSummary.idlePct, 1);
-        document.getElementById('kpi-excesso').textContent = formatPercent(currentSummary.excessoPct, 1);
-        document.getElementById('kpi-excesso-horas').textContent = `${formatHours(currentSummary.excessoHours)} em excesso`;
 
         const evalGrade = gradeFromScore(currentSummary.notaMedia);
         const evalPalette = getGradePalette(evalGrade);
@@ -2882,7 +2938,7 @@
         evalGradeLetter.style.background = evalPalette.bg;
         evalGradeLetter.style.color = evalPalette.text;
         document.getElementById('eval-grade-sub').textContent = currentSummary.metaVehicles > 0
-            ? `${formatNumber(currentSummary.metaHitVehicles, 0)}/${formatNumber(currentSummary.metaVehicles, 0)} equipamentos atingiram a meta de consumo`
+            ? `${formatNumber(currentSummary.metaHitVehicles, 0)}/${formatNumber(currentSummary.metaVehicles, 0)} atingiram a meta | Delta medio ${formatSigned(currentSummary.metaGapMedio, 2, ' km/l')}`
             : `${formatNumber(currentSummary.criticalVehicles, 0)} equipamentos abaixo de 60 pontos`;
         document.getElementById('faixa-meter').style.width = `${Math.min(currentSummary.faixaVerdePct, 100)}%`;
         document.getElementById('kpi-faixa-msg').textContent = currentSummary.faixaVerdePct >= 85
@@ -2895,6 +2951,10 @@
             : 'Cadastre metas na aba Meta para liberar esta leitura';
         document.getElementById('mini-critical').textContent = formatNumber(currentSummary.criticalVehicles, 0);
         document.getElementById('mini-idle-hours').textContent = formatHours(currentSummary.idleHours);
+        document.getElementById('mini-below-meta').textContent = formatNumber(currentSummary.belowMetaVehicles, 0);
+        document.getElementById('mini-below-meta-sub').textContent = currentSummary.metaVehicles > 0
+            ? `${formatSigned(currentSummary.metaGapMedio, 2, ' km/l')} de desvio medio para a frota com meta`
+            : 'Sem metas suficientes para comparar consumo';
         document.getElementById('mini-cost-total').textContent = formatCurrency(totalCost);
         document.getElementById('mini-cost-km').textContent = formatCurrency(costPerKm);
         document.getElementById('mini-diesel-ref').textContent = `Diesel de referencia: ${formatCurrency(dieselPrice)}/L`;
@@ -2959,8 +3019,8 @@
         document.getElementById('alert-3-title').textContent = `${formatNumber(summary.criticalVehicles, 0)} equipamento(s) com nota critica`;
         document.getElementById('alert-3-text').textContent = 'Acao: priorizar tratativa nos equipamentos com nota abaixo de 60.';
 
-        document.getElementById('alert-4-title').textContent = `Faixa verde em ${formatPercent(summary.faixaVerdePct, 1)} | Excesso em ${formatPercent(summary.excessoPct, 1)}`;
-        document.getElementById('alert-4-text').textContent = 'Acao: equilibrar disciplina de velocidade com aproveitamento de faixa verde.';
+        document.getElementById('alert-4-title').textContent = `Faixa verde em ${formatPercent(summary.faixaVerdePct, 1)} | Embalo em ${formatPercent(summary.embaloPct, 1)}`;
+        document.getElementById('alert-4-text').textContent = 'Acao: combinar uso da faixa verde com embalo e freio motor para melhorar o consumo.';
     }
 
     function renderComparisons(currentSummary, previousSummary, previousPeriod) {
@@ -2970,7 +3030,7 @@
             eff: compareMetric(currentSummary.eficiencia, previousSummary.eficiencia, true, ' km/l', 2),
             score: compareMetric(currentSummary.notaMedia, previousSummary.notaMedia, true, ' pts', 1),
             faixa: compareMetric(currentSummary.faixaVerdePct, previousSummary.faixaVerdePct, true, ' p.p.', 1),
-            excesso: compareMetric(currentSummary.excessoPct, previousSummary.excessoPct, false, ' p.p.', 1),
+            idle: compareMetric(currentSummary.idlePct, previousSummary.idlePct, false, ' p.p.', 1),
             km: compareMetric(currentSummary.km, previousSummary.km, true, ' km', 0)
         };
 
@@ -2990,18 +3050,19 @@
         vehicles
             .slice()
             .sort((a, b) => {
+                if ((a.meta > 0 || b.meta > 0) && a.metaGap !== b.metaGap) return a.metaGap - b.metaGap;
                 if (a.notaMedia !== b.notaMedia) return a.notaMedia - b.notaMedia;
                 if (b.idlePct !== a.idlePct) return b.idlePct - a.idlePct;
-                return b.excessoPct - a.excessoPct;
+                return b.faixaVerdePct - a.faixaVerdePct;
             })
             .slice(0, 8)
             .forEach((vehicle) => {
-                const action = vehicle.notaMedia < 60 ? 'Tratativa imediata' : vehicle.excessoPct > 5 ? 'Rever velocidade' : 'Rever marcha lenta';
+                const action = vehicle.meta > 0 && vehicle.metaGap < 0 ? 'Rever consumo' : vehicle.notaMedia < 60 ? 'Tratativa imediata' : 'Rever marcha lenta';
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${vehicle.id}</strong> <small style="color:#7d8ba8">${vehicle.modelo || '-'}</small></td>
-                        <td>Nota ${formatNumber(vehicle.notaMedia, 1)} | ${formatNumber(vehicle.kml, 2)} km/l | Marcha lenta ${formatPercent(vehicle.idlePct, 1)}</td>
-                        <td><span class="delta-pill ${vehicle.notaMedia < 60 ? 'delta-bad' : 'delta-good'}">${action}</span></td>
+                        <td>${vehicle.meta > 0 ? `Meta ${formatNumber(vehicle.meta, 2)} | Real ${formatNumber(vehicle.kml, 2)} | Delta ${formatSigned(vehicle.metaGap, 2)}` : `Nota ${formatNumber(vehicle.notaMedia, 1)} | ${formatNumber(vehicle.kml, 2)} km/l`} | Marcha lenta ${formatPercent(vehicle.idlePct, 1)}</td>
+                        <td><span class="delta-pill ${(vehicle.meta > 0 && vehicle.metaGap < 0) || vehicle.notaMedia < 60 ? 'delta-bad' : 'delta-good'}">${action}</span></td>
                     </tr>
                 `;
             });
@@ -3015,11 +3076,14 @@
         vehicles
             .slice()
             .sort((a, b) => {
+                if ((a.meta > 0 || b.meta > 0) && a.metaGap !== b.metaGap) return a.metaGap - b.metaGap;
                 if (a.notaMedia !== b.notaMedia) return a.notaMedia - b.notaMedia;
-                if (b.excessoPct !== a.excessoPct) return b.excessoPct - a.excessoPct;
-                return a.notaMedia - b.notaMedia;
+                return b.idlePct - a.idlePct;
             })
             .forEach((vehicle) => {
+                const deltaColor = vehicle.meta > 0
+                    ? (vehicle.metaGap >= 0 ? 'var(--success)' : 'var(--danger)')
+                    : 'var(--text-main)';
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${vehicle.id}</strong></td>
@@ -3029,11 +3093,13 @@
                         <td>${formatNumber(vehicle.km, 0)}</td>
                         <td>${formatNumber(vehicle.consumo, 0)} L</td>
                         <td>${formatNumber(vehicle.kml, 2)}</td>
+                        <td>${vehicle.meta > 0 ? formatNumber(vehicle.meta, 2) : '--'}</td>
+                        <td style="color:${deltaColor}; font-weight:700;">${vehicle.meta > 0 ? formatSigned(vehicle.metaGap, 2) : '--'}</td>
                         <td>${formatNumber(vehicle.notaMedia, 1)}</td>
                         <td><span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;padding:4px 8px;border-radius:999px;font-weight:800;${getGradeStyle(vehicle.grade)}">${vehicle.grade}</span></td>
+                        <td>${vehicle.motorista || '-'}</td>
                         <td>${formatPercent(vehicle.faixaVerdePct, 1)}</td>
                         <td>${formatPercent(vehicle.idlePct, 1)}</td>
-                        <td style="color:${vehicle.excessoPct > 5 ? 'var(--danger)' : 'var(--text-main)'}; font-weight:700;">${formatPercent(vehicle.excessoPct, 1)}</td>
                     </tr>
                 `;
             });
@@ -3153,16 +3219,16 @@
         chartBottomVehicles = new Chart(bottomCtx, {
             type: 'bar',
             data: {
-                labels: ['Faixa', 'Embalo', 'Piloto', 'Marcha lenta', 'Excesso'],
+                labels: ['Faixa', 'Embalo', 'Piloto', 'Freio motor', 'Marcha lenta'],
                 datasets: [{
                     data: [
                         Number(currentSummary.faixaVerdePct.toFixed(1)),
                         Number(currentSummary.embaloPct.toFixed(1)),
                         Number(currentSummary.pilotoAutomaticoPct.toFixed(1)),
-                        Number(currentSummary.idlePct.toFixed(1)),
-                        Number(currentSummary.excessoPct.toFixed(1))
+                        Number(currentSummary.freioMotorPct.toFixed(1)),
+                        Number(currentSummary.idlePct.toFixed(1))
                     ],
-                    backgroundColor: ['#2563eb', '#22c55e', '#60a5fa', '#f59e0b', '#ef4444'],
+                    backgroundColor: ['#2563eb', '#22c55e', '#60a5fa', '#14b8a6', '#f59e0b'],
                     borderRadius: 14
                 }]
             },
