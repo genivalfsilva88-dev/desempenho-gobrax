@@ -297,6 +297,19 @@
             line-height:1;
         }
         .stat-panel .support { margin-top:6px; font-size:11px; color:#7082a4; }
+        .eval-grade-letter {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-width:92px;
+            padding:6px 12px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:900;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+            margin-top:10px;
+        }
         .meter {
             margin-top:14px;
             height: 8px;
@@ -551,6 +564,13 @@
             font-size:12px;
             font-weight:800;
             color:#415578;
+            text-align:center;
+        }
+        .ops-pressure-time {
+            margin-top:4px;
+            font-size:11px;
+            font-weight:700;
+            color:#7d8ba8;
             text-align:center;
         }
         .ops-pressure-score {
@@ -929,6 +949,7 @@
                     <div class="stat-panel">
                         <h3>Nota media operacional</h3>
                         <div class="big" id="eval-grade">0,0</div>
+                        <div id="eval-grade-letter" class="eval-grade-letter">Classe E</div>
                         <div class="support" id="eval-grade-sub">Sem base comparativa</div>
                     </div>
                     <div class="stat-panel">
@@ -977,7 +998,7 @@
         </div>
 
         <div class="mini-grid">
-            <div class="mini-card"><div class="mini-label">Meta atingida</div><div class="mini-value" id="mini-meta">0%</div><div class="mini-sub">Equipamentos fora da zona critica</div></div>
+            <div class="mini-card"><div class="mini-label">Meta atingida</div><div class="mini-value" id="mini-meta">0%</div><div class="mini-sub" id="mini-meta-sub">Metas por veiculo nao carregadas</div></div>
             <div class="mini-card"><div class="mini-label">Potencial de melhoria</div><div class="mini-value" id="mini-critical">0</div><div class="mini-sub">Equipamentos criticos no filtro</div></div>
             <div class="mini-card"><div class="mini-label">Marcha lenta</div><div class="mini-value" id="mini-idle-hours">0h</div><div class="mini-sub">Tempo acumulado em marcha lenta</div></div>
             <div class="mini-card"><div class="mini-label">Excesso vel.</div><div class="mini-value" id="kpi-excesso">0,0%</div><div class="mini-sub" id="kpi-excesso-horas">0h em excesso</div></div>
@@ -1005,10 +1026,10 @@
                     </div>
                 </div>
                 <div class="ops-focus-meta">
-                    <div class="ops-meta-item"><span class="ops-meta-key">Equip.</span><span id="ops-meta-frota">-</span></div>
-                    <div class="ops-meta-item"><span class="ops-meta-key">Placa</span><span id="ops-meta-placa">-</span></div>
-                    <div class="ops-meta-item"><span class="ops-meta-key">Modelo</span><span id="ops-meta-modelo">-</span></div>
-                    <div class="ops-meta-item"><span class="ops-meta-key">Grupo</span><span id="ops-meta-grupo">-</span></div>
+                    <div class="ops-meta-item"><span id="ops-meta-frota-label" class="ops-meta-key">Equip.</span><span id="ops-meta-frota">-</span></div>
+                    <div class="ops-meta-item"><span id="ops-meta-placa-label" class="ops-meta-key">Placa</span><span id="ops-meta-placa">-</span></div>
+                    <div class="ops-meta-item"><span id="ops-meta-modelo-label" class="ops-meta-key">Modelo</span><span id="ops-meta-modelo">-</span></div>
+                    <div class="ops-meta-item"><span id="ops-meta-grupo-label" class="ops-meta-key">Grupo</span><span id="ops-meta-grupo">-</span></div>
                 </div>
             </div>
             <div class="ops-panel-card">
@@ -1078,14 +1099,17 @@
                     <div class="ops-pressure-bar">
                         <div class="ops-pressure-track"><div id="ops-pedal-ideal-fill" class="ops-pressure-fill ideal" style="height:0%">0%</div></div>
                         <div class="ops-pressure-label">Ideal</div>
+                        <div id="ops-pedal-ideal-time" class="ops-pressure-time">00:00:00</div>
                     </div>
                     <div class="ops-pressure-bar">
                         <div class="ops-pressure-track"><div id="ops-pedal-atencao-fill" class="ops-pressure-fill attention" style="height:0%">0%</div></div>
                         <div class="ops-pressure-label">Atencao</div>
+                        <div id="ops-pedal-atencao-time" class="ops-pressure-time">00:00:00</div>
                     </div>
                     <div class="ops-pressure-bar">
                         <div class="ops-pressure-track"><div id="ops-pedal-critico-fill" class="ops-pressure-fill critical" style="height:0%">0%</div></div>
                         <div class="ops-pressure-label">Critico</div>
+                        <div id="ops-pedal-critico-time" class="ops-pressure-time">00:00:00</div>
                     </div>
                 </div>
                 <div id="ops-pressure-score" class="ops-pressure-score"></div>
@@ -1213,7 +1237,8 @@
         { name: 'Setembro', sourceName: 'Setembro', gid: '801949435', order: 9 },
         { name: 'Outubro', sourceName: 'Outubro', gid: '330406732', order: 10 },
         { name: 'Novembro', sourceName: 'Novembro', gid: '1146622031', order: 11 },
-        { name: 'Dezembro', sourceName: 'Dezembro', gid: '1324616894', order: 12 }
+        { name: 'Dezembro', sourceName: 'Dezembro', gid: '1324616894', order: 12 },
+        { name: 'Meta', sourceName: 'Meta', order: 99, type: 'meta', optional: true }
     ];
 
     const CONNECTION_METHODS = [
@@ -1449,6 +1474,15 @@
         return minutes ? `${hours}h ${minutes}min` : `${hours}h`;
     }
 
+    function formatClockDuration(value) {
+        if (!Number.isFinite(value) || value <= 0) return '00:00:00';
+        const totalSeconds = Math.max(0, Math.round(value * 3600));
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return [hours, minutes, seconds].map((part) => String(part).padStart(2, '0')).join(':');
+    }
+
     function formatNumber(value, decimals = 0) {
         return Number(value || 0).toLocaleString('pt-BR', {
             minimumFractionDigits: decimals,
@@ -1536,12 +1570,17 @@
         }
     }
 
+    function getGradePalette(grade) {
+        if (grade === 'A') return { bg: '#dcfce7', text: '#166534' };
+        if (grade === 'B') return { bg: '#dbeafe', text: '#1d4ed8' };
+        if (grade === 'C') return { bg: '#fef3c7', text: '#b45309' };
+        if (grade === 'D') return { bg: '#ffedd5', text: '#c2410c' };
+        return { bg: '#fee2e2', text: '#b91c1c' };
+    }
+
     function getGradeStyle(grade) {
-        if (grade === 'A') return 'background:#dcfce7;color:#166534;';
-        if (grade === 'B') return 'background:#dbeafe;color:#1d4ed8;';
-        if (grade === 'C') return 'background:#fef3c7;color:#b45309;';
-        if (grade === 'D') return 'background:#ffedd5;color:#c2410c;';
-        return 'background:#fee2e2;color:#b91c1c;';
+        const palette = getGradePalette(grade);
+        return `background:${palette.bg};color:${palette.text};`;
     }
 
     function gradeFromScore(score) {
@@ -1634,26 +1673,51 @@
         return 'bar-red';
     }
 
-    function buildSheetUrl(gid) {
-        return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
+    function isMetaSheet(sheet) {
+        return normalizeKey(sheet?.type) === 'meta' || normalizeKey(sheet?.name) === 'meta' || normalizeKey(sheet?.sourceName) === 'meta';
+    }
+
+    function rowHasMetaFields(rawRow) {
+        const row = buildNormalizedRow(rawRow);
+        const metaValue = parseLocaleNumber(getField(row, ['meta', 'meta km l', 'meta km/l', 'meta consumo', 'meta de consumo']));
+        const motorista = String(getField(row, ['motorista', 'condutor', 'motorista alocado'])).trim();
+        return metaValue > 0 || Boolean(motorista);
+    }
+
+    function shouldAcceptSheet(sheet, rows) {
+        if (!Array.isArray(rows) || !rows.length) return false;
+        if (!isMetaSheet(sheet)) return true;
+        return rows.some((row) => rowHasMetaFields(row));
+    }
+
+    function buildSheetRefParam(sheet) {
+        if (sheet.gid) return `gid=${sheet.gid}`;
+        return `sheet=${encodeURIComponent(sheet.sourceName || sheet.name)}`;
+    }
+
+    function buildSheetUrl(sheet) {
+        return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&${buildSheetRefParam(sheet)}`;
     }
 
     function getBundledSheets() {
         if (!window.GOBRAX_DATA || !Array.isArray(window.GOBRAX_DATA.sheets)) return [];
         return window.GOBRAX_DATA.sheets.map((sheet) => ({
-            name: inferMonthLabel(sheet.name),
+            name: sheet.name,
+            sourceName: sheet.sourceName || sheet.name,
             order: sheet.order || inferMonthOrder(sheet.name),
+            type: sheet.type || null,
             rows: Array.isArray(sheet.rows) ? sheet.rows : []
-        })).filter((sheet) => sheet.rows.length);
+        })).filter((sheet) => shouldAcceptSheet(sheet, sheet.rows));
     }
 
-    function fetchSheetViaJsonp(gid) {
+    function fetchSheetViaJsonp(sheet) {
         return new Promise((resolve, reject) => {
-            const callbackName = `__gobr_cb_${gid}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+            const refLabel = sheet.gid || normalizeKey(sheet.sourceName || sheet.name) || 'sheet';
+            const callbackName = `__gobr_cb_${refLabel}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
             const script = document.createElement('script');
             const timeout = window.setTimeout(() => {
                 cleanup();
-                reject(new Error(`Timeout ao carregar aba ${gid}`));
+                reject(new Error(`Timeout ao carregar aba ${sheet.name}`));
             }, 20000);
 
             function cleanup() {
@@ -1690,10 +1754,10 @@
 
             script.onerror = () => {
                 cleanup();
-                reject(new Error(`Falha ao carregar aba ${gid}`));
+                reject(new Error(`Falha ao carregar aba ${sheet.name}`));
             };
 
-            script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${gid}&tqx=responseHandler:${callbackName}`;
+            script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?${buildSheetRefParam(sheet)}&tqx=responseHandler:${callbackName}`;
             document.head.appendChild(script);
         });
     }
@@ -1735,19 +1799,19 @@
             const results = await Promise.all(
                 SHEET_CONFIG.map(async (sheet) => {
                     try {
-                        const rows = await fetchSheetViaJsonp(sheet.gid);
-                        if (rows && rows.length) {
-                            return { name: sheet.name, order: sheet.order, rows };
+                        const rows = await fetchSheetViaJsonp(sheet);
+                        if (shouldAcceptSheet(sheet, rows)) {
+                            return { name: sheet.name, sourceName: sheet.sourceName, order: sheet.order, type: sheet.type || null, rows };
                         }
                     } catch (jsonpError) {
                         console.warn('Falha no carregamento JSONP, tentando CSV:', sheet.name, jsonpError);
                     }
 
-                    const csvText = await fetchTextWithFallback(buildSheetUrl(sheet.gid));
+                    const csvText = await fetchTextWithFallback(buildSheetUrl(sheet));
                     if (!csvText || !csvText.trim()) return null;
                     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-                    if (!parsed.data || !parsed.data.length) return null;
-                    return { name: sheet.name, order: sheet.order, rows: parsed.data };
+                    if (!shouldAcceptSheet(sheet, parsed.data)) return null;
+                    return { name: sheet.name, sourceName: sheet.sourceName, order: sheet.order, type: sheet.type || null, rows: parsed.data };
                 })
             );
 
@@ -1835,8 +1899,51 @@
     function processarWorkbook(sheets, meta = {}) {
         const dataset = [];
         const periodMap = new Map();
+        const metaIndex = new Map();
 
-        sheets.forEach((sheet) => {
+        function mergeMetaEntry(current, next) {
+            return {
+                meta: next.meta > 0 ? next.meta : (current?.meta || 0),
+                motorista: next.motorista || current?.motorista || '',
+                modelo: next.modelo || current?.modelo || '',
+                placa: next.placa || current?.placa || '',
+                frota: next.frota || current?.frota || ''
+            };
+        }
+
+        function registerMetaEntry(key, entry) {
+            if (!key) return;
+            metaIndex.set(key, mergeMetaEntry(metaIndex.get(key), entry));
+        }
+
+        sheets
+            .filter((sheet) => isMetaSheet(sheet))
+            .forEach((sheet) => {
+                sheet.rows.forEach((rawRow) => {
+                    const row = buildNormalizedRow(rawRow);
+                    const frota = String(getField(row, ['frota', 'equipamento'])).trim();
+                    const placa = String(getField(row, ['placa'])).trim().toUpperCase();
+                    const modelo = String(getField(row, ['modelo'])).trim();
+                    const motorista = String(getField(row, ['motorista', 'condutor', 'motorista alocado'])).trim();
+                    const metaValue = parseLocaleNumber(getField(row, ['meta', 'meta km l', 'meta km/l', 'meta consumo', 'meta de consumo']));
+
+                    if (!frota && !placa && !modelo && !motorista && metaValue <= 0) return;
+
+                    const entry = { frota, placa, modelo, motorista, meta: metaValue };
+                    registerMetaEntry(frota ? `frota:${frota}` : '', entry);
+                    registerMetaEntry(placa ? `placa:${placa}` : '', entry);
+                    registerMetaEntry(modelo ? `modelo:${normalizeKey(modelo)}` : '', entry);
+                });
+            });
+
+        function resolveMetaEntry(frota, placa, modelo) {
+            return metaIndex.get(`frota:${frota}`)
+                || metaIndex.get(`placa:${placa}`)
+                || metaIndex.get(`modelo:${normalizeKey(modelo)}`)
+                || null;
+        }
+
+        sheets.filter((sheet) => !isMetaSheet(sheet)).forEach((sheet) => {
             const periodLabel = inferMonthLabel(sheet.name);
             const periodOrder = sheet.order || inferMonthOrder(sheet.name);
             if (sheet.rows && sheet.rows.length) periodMap.set(periodLabel, periodOrder);
@@ -1850,14 +1957,15 @@
                 const modelo = String(getField(row, ['modelo'])).trim();
                 const tracao = String(getField(row, ['tracao'])).trim();
                 const grupo = String(getField(row, ['grupo de veiculos', 'grupo'])).trim();
-                const motorista = String(getField(row, ['motorista', 'condutor', 'motorista alocado'])).trim();
+                const metaEntry = resolveMetaEntry(frota, placa, modelo);
+                const motorista = String(getField(row, ['motorista', 'condutor', 'motorista alocado'])).trim() || metaEntry?.motorista || '';
 
                 if (!frota && !placa && !modelo) return;
 
                 const km = parseLocaleNumber(getField(row, ['km total', 'km']));
                 const consumo = parseLocaleNumber(getField(row, ['consumo total', 'consumo']));
                 const nota = parseLocaleNumber(getField(row, ['nota geral', 'nota']));
-                const meta = parseLocaleNumber(getField(row, ['meta', 'meta km l', 'meta km/l', 'meta consumo']));
+                const meta = parseLocaleNumber(getField(row, ['meta', 'meta km l', 'meta km/l', 'meta consumo'])) || metaEntry?.meta || 0;
                 const mediaBordo = parseLocaleNumber(getField(row, ['media computador de bordo', 'media de bordo']));
                 const velocidadeMedia = parseLocaleNumber(getField(row, ['velocidade media']));
                 const odometro = parseLocaleNumber(getField(row, ['odometro']));
@@ -2130,10 +2238,11 @@
             const kmlCalculado = safeDivide(vehicle.km, vehicle.consumo);
             const faixaVerdePct = safeDivide(vehicle.faixaVerdeHours, vehicle.movimentoHours) * 100;
             const excessoPct = safeDivide(vehicle.excessoHours, vehicle.movimentoHours) * 100;
+            const notaMedia = safeDivide(vehicle.notaTotal, vehicle.notaCount);
             const status = resolveVehicleStatus({
                 ...vehicle,
                 kml: kmlCalculado,
-                notaMedia: safeDivide(vehicle.notaTotal, vehicle.notaCount),
+                notaMedia,
                 faixaVerdePct,
                 excessoPct
             });
@@ -2141,12 +2250,12 @@
             return {
                 ...vehicle,
                 kml: kmlCalculado || safeDivide(vehicle.mediaBordoWeighted, vehicle.mediaBordoBase),
-                notaMedia: safeDivide(vehicle.notaTotal, vehicle.notaCount),
+                notaMedia,
                 idlePct: safeDivide(vehicle.idlePctWeighted, vehicle.idlePctBase) || safeDivide(vehicle.idleHours, vehicle.movimentoHours + vehicle.idleHours) * 100,
                 faixaVerdePct,
                 excessoPct,
                 freadas100Km: safeDivide(vehicle.freadasTotal, vehicle.freadasBase),
-                grade: gradeFromScore(safeDivide(vehicle.notaTotal, vehicle.notaCount)),
+                grade: gradeFromScore(notaMedia),
                 status
             };
         });
@@ -2202,7 +2311,8 @@
         const notaValores = records.filter((item) => item.nota > 0);
         const activeVehicles = vehicles.filter((item) => item.km > 0 || item.consumo > 0 || item.movimentoHours > 0);
         const criticalVehicles = activeVehicles.filter((item) => item.notaMedia > 0 && item.notaMedia < 60);
-        const healthyVehicles = activeVehicles.filter((item) => item.status.label === 'Bom' || item.status.label === 'Elite');
+        const metaVehicles = activeVehicles.filter((item) => item.meta > 0 && item.km > 0 && item.consumo > 0);
+        const metaHitVehicles = metaVehicles.filter((item) => item.kml >= item.meta);
         const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         activeVehicles.forEach((vehicle) => { distribution[vehicle.grade] += 1; });
         const movimentoWeight = (item) => item.tempoMovimentoHours || item.km || 1;
@@ -2225,7 +2335,10 @@
             excessoHours,
             idleHours,
             criticalVehicles: criticalVehicles.length,
-            metaAtingidaPct: safeDivide(healthyVehicles.length, activeVehicles.length) * 100,
+            metaVehicles: metaVehicles.length,
+            metaHitVehicles: metaHitVehicles.length,
+            metaAtingidaPct: safeDivide(metaHitVehicles.length, metaVehicles.length) * 100,
+            metaCoveragePct: safeDivide(metaVehicles.length, activeVehicles.length) * 100,
             distMedia: safeDivide(km, activeVehicles.length),
             distribution,
             idleHighRpmPct: weightedAverage(records, 'idleHighRpmPct', idleWeight),
@@ -2255,7 +2368,8 @@
     }
 
     function buildOperationalFocus(records, currentSummary, context) {
-        const vehicle = getPrimaryVehicle(records, context);
+        const isIndividual = context.vehicle !== 'all';
+        const vehicle = isIndividual ? getPrimaryVehicle(records, context) : null;
         const scopedRecords = vehicle
             ? records.filter((item) => (item.frota || item.placa || item.modelo) === vehicle.id)
             : records;
@@ -2270,10 +2384,14 @@
         const focusExcessoHours = scopedRecords.reduce((sum, item) => sum + item.excessoHours, 0);
         const focusFaixaHours = scopedRecords.reduce((sum, item) => sum + item.faixaVerdeHours, 0);
         const focusMovimentoHours = scopedRecords.reduce((sum, item) => sum + item.tempoMovimentoHours, 0);
+        const pedalIdealHours = scopedRecords.reduce((sum, item) => sum + item.pedalIdealHours, 0);
+        const pedalAtencaoHours = scopedRecords.reduce((sum, item) => sum + item.pedalAtencaoHours, 0);
+        const pedalCriticoHours = scopedRecords.reduce((sum, item) => sum + item.pedalCriticoHours, 0);
         const dieselPrice = getDieselPrice();
         const totalCost = focusConsumo * dieselPrice;
 
         return {
+            scope: vehicle ? 'individual' : 'fleet',
             title: vehicle ? `Equipamento ${vehicle.id}` : 'Frota filtrada',
             copy: vehicle
                 ? 'Indicadores principais do equipamento no periodo filtrado.'
@@ -2286,6 +2404,11 @@
             group: vehicle?.grupo || scopedRecords[0]?.grupo || '-',
             brand: scopedRecords[0]?.marca || '-',
             traction: scopedRecords[0]?.tracao || '-',
+            activeVehicles: currentSummary.activeVehicles,
+            groupsCount: currentSummary.groups.length,
+            metaVehicles: currentSummary.metaVehicles,
+            metaHitVehicles: currentSummary.metaHitVehicles,
+            filterGroup: context.group,
             km: focusKm,
             consumo: focusConsumo,
             custo: totalCost,
@@ -2297,6 +2420,9 @@
             pedalIdealPct: weightedAverage(scopedRecords, 'pedalIdealPct', movementWeight),
             pedalAtencaoPct: weightedAverage(scopedRecords, 'pedalAtencaoPct', movementWeight),
             pedalCriticoPct: weightedAverage(scopedRecords, 'pedalCriticoPct', movementWeight),
+            pedalIdealHours,
+            pedalAtencaoHours,
+            pedalCriticoHours,
             indicators: [
                 {
                     valueId: 'ops-ind-inicio-faixa',
@@ -2367,9 +2493,7 @@
     }
 
     function getScoreColor(score) {
-        if (score >= 85) return '#16a34a';
-        if (score >= 70) return '#f59e0b';
-        return '#ef4444';
+        return getGradePalette(gradeFromScore(score)).text;
     }
 
     function getIndicatorColor(pct, inverse = false) {
@@ -2388,10 +2512,27 @@
 
         document.getElementById('ops-score-value').textContent = formatNumber(focus.score, 0);
         document.getElementById('ops-score-grade').textContent = `Classe ${focus.grade}`;
-        document.getElementById('ops-meta-frota').textContent = `${focus.vehicleId}${focus.brand !== '-' ? ` | ${focus.brand}` : ''}`;
-        document.getElementById('ops-meta-placa').textContent = focus.plate;
-        document.getElementById('ops-meta-modelo').textContent = `${focus.model}${focus.traction !== '-' ? ` | ${focus.traction}` : ''}`;
-        document.getElementById('ops-meta-grupo').textContent = focus.group;
+        if (focus.scope === 'individual') {
+            document.getElementById('ops-meta-frota-label').textContent = 'Equip.';
+            document.getElementById('ops-meta-placa-label').textContent = 'Placa';
+            document.getElementById('ops-meta-modelo-label').textContent = 'Modelo';
+            document.getElementById('ops-meta-grupo-label').textContent = 'Grupo';
+            document.getElementById('ops-meta-frota').textContent = `${focus.vehicleId}${focus.brand !== '-' ? ` | ${focus.brand}` : ''}`;
+            document.getElementById('ops-meta-placa').textContent = focus.plate;
+            document.getElementById('ops-meta-modelo').textContent = `${focus.model}${focus.traction !== '-' ? ` | ${focus.traction}` : ''}`;
+            document.getElementById('ops-meta-grupo').textContent = focus.group;
+        } else {
+            document.getElementById('ops-meta-frota-label').textContent = 'Frota';
+            document.getElementById('ops-meta-placa-label').textContent = 'Metas';
+            document.getElementById('ops-meta-modelo-label').textContent = 'Grupos';
+            document.getElementById('ops-meta-grupo-label').textContent = 'Filtro';
+            document.getElementById('ops-meta-frota').textContent = `${formatNumber(focus.activeVehicles, 0)} veiculos com leitura`;
+            document.getElementById('ops-meta-placa').textContent = focus.metaVehicles > 0
+                ? `${formatNumber(focus.metaHitVehicles, 0)}/${formatNumber(focus.metaVehicles, 0)} na meta`
+                : 'Sem metas carregadas';
+            document.getElementById('ops-meta-modelo').textContent = `${formatNumber(focus.groupsCount, 0)} grupos no filtro`;
+            document.getElementById('ops-meta-grupo').textContent = focus.filterGroup === 'all' ? 'Todos os grupos' : focus.filterGroup;
+        }
         document.getElementById('ops-page-copy').textContent = focus.copy;
         document.getElementById('ops-indicators-copy').textContent = focus.copy;
 
@@ -2402,7 +2543,7 @@
             const barEl = document.getElementById(indicator.barId);
             valueEl.textContent = formatPercent(indicator.pct, 0);
             valueEl.style.color = color;
-            timeEl.textContent = formatHours(indicator.hours);
+            timeEl.textContent = formatClockDuration(indicator.hours);
             barEl.style.width = `${Math.max(0, Math.min(indicator.inverse ? 100 - indicator.pct : indicator.pct, 100))}%`;
             barEl.style.background = color;
         });
@@ -2421,6 +2562,9 @@
         pedalAtencaoEl.textContent = formatPercent(pedalAtencao, 0);
         pedalCriticoEl.style.height = `${pedalCritico}%`;
         pedalCriticoEl.textContent = formatPercent(pedalCritico, 0);
+        document.getElementById('ops-pedal-ideal-time').textContent = formatClockDuration(focus.pedalIdealHours);
+        document.getElementById('ops-pedal-atencao-time').textContent = formatClockDuration(focus.pedalAtencaoHours);
+        document.getElementById('ops-pedal-critico-time').textContent = formatClockDuration(focus.pedalCriticoHours);
 
         const pressureScore = Math.max(0, Math.min(5, Math.round((pedalIdeal - pedalCritico) / 20 + 1)));
         const stars = Array.from({ length: 5 }, (_, index) => `<span class="ops-star ${index < pressureScore ? 'active' : ''}"></span>`).join('');
@@ -2431,7 +2575,7 @@
         document.getElementById('ops-stat-consumo').textContent = `${formatNumber(focus.consumo, 0)} L`;
         document.getElementById('ops-stat-board').textContent = `${formatNumber(focus.mediaBordo, 2)} km/l`;
         document.getElementById('ops-stat-odometro').textContent = formatNumber(focus.odometro, 0);
-        document.getElementById('ops-stat-movimento').textContent = formatHours(focus.movimentoHours);
+        document.getElementById('ops-stat-movimento').textContent = formatClockDuration(focus.movimentoHours);
         document.getElementById('ops-stat-cost').textContent = formatCurrency(focus.custo);
         document.getElementById('ops-stat-cost-km').textContent = formatCurrency(focus.custoKm);
     }
@@ -2728,14 +2872,25 @@
         document.getElementById('kpi-excesso').textContent = formatPercent(currentSummary.excessoPct, 1);
         document.getElementById('kpi-excesso-horas').textContent = `${formatHours(currentSummary.excessoHours)} em excesso`;
 
-        document.getElementById('eval-grade').textContent = `${formatNumber(currentSummary.notaMedia, 1)} ${gradeFromScore(currentSummary.notaMedia)}`;
-        document.getElementById('eval-grade-sub').textContent = `${formatPercent(currentSummary.metaAtingidaPct, 1)} da frota fora da zona critica`;
+        const evalGrade = gradeFromScore(currentSummary.notaMedia);
+        const evalPalette = getGradePalette(evalGrade);
+        document.getElementById('eval-grade').textContent = formatNumber(currentSummary.notaMedia, 1);
+        const evalGradeLetter = document.getElementById('eval-grade-letter');
+        evalGradeLetter.textContent = `Classe ${evalGrade}`;
+        evalGradeLetter.style.background = evalPalette.bg;
+        evalGradeLetter.style.color = evalPalette.text;
+        document.getElementById('eval-grade-sub').textContent = currentSummary.metaVehicles > 0
+            ? `${formatNumber(currentSummary.metaHitVehicles, 0)}/${formatNumber(currentSummary.metaVehicles, 0)} equipamentos atingiram a meta de consumo`
+            : `${formatNumber(currentSummary.criticalVehicles, 0)} equipamentos abaixo de 60 pontos`;
         document.getElementById('faixa-meter').style.width = `${Math.min(currentSummary.faixaVerdePct, 100)}%`;
         document.getElementById('kpi-faixa-msg').textContent = currentSummary.faixaVerdePct >= 85
             ? 'Operacao dentro da faixa saudavel'
             : currentSummary.faixaVerdePct >= 70 ? 'Faixa verde em zona de atencao' : 'Faixa verde abaixo do esperado';
 
-        document.getElementById('mini-meta').textContent = formatPercent(currentSummary.metaAtingidaPct, 1);
+        document.getElementById('mini-meta').textContent = currentSummary.metaVehicles > 0 ? formatPercent(currentSummary.metaAtingidaPct, 1) : '--';
+        document.getElementById('mini-meta-sub').textContent = currentSummary.metaVehicles > 0
+            ? `${formatNumber(currentSummary.metaHitVehicles, 0)} de ${formatNumber(currentSummary.metaVehicles, 0)} equipamentos com meta`
+            : 'Cadastre metas na aba Meta para liberar esta leitura';
         document.getElementById('mini-critical').textContent = formatNumber(currentSummary.criticalVehicles, 0);
         document.getElementById('mini-idle-hours').textContent = formatHours(currentSummary.idleHours);
         document.getElementById('mini-cost-total').textContent = formatCurrency(totalCost);
@@ -2786,10 +2941,15 @@
     }
 
     function renderAlerts(summary) {
-        document.getElementById('alert-1-title').textContent = `${formatPercent(summary.metaAtingidaPct, 1)} da frota fora da zona critica`;
-        document.getElementById('alert-1-text').textContent = summary.metaAtingidaPct >= 70
-            ? 'Acao: manter rotina de acompanhamento e atacar apenas os pontos fora da curva.'
-            : 'Acao: rever rapidamente os equipamentos fora do padrao.';
+        if (summary.metaVehicles > 0) {
+            document.getElementById('alert-1-title').textContent = `${formatPercent(summary.metaAtingidaPct, 1)} dos equipamentos com meta estao no alvo`;
+            document.getElementById('alert-1-text').textContent = summary.metaAtingidaPct >= 70
+                ? 'Acao: manter tratativa nos desvios e expandir o cadastro de metas para o restante da frota.'
+                : 'Acao: revisar os equipamentos abaixo da meta e validar a cobertura do cadastro.';
+        } else {
+            document.getElementById('alert-1-title').textContent = 'Sem metas por veiculo carregadas na base';
+            document.getElementById('alert-1-text').textContent = 'Acao: alimentar a aba Meta com frota, placa ou modelo para liberar a analise de meta.';
+        }
 
         document.getElementById('alert-2-title').textContent = `Marcha lenta media em ${formatPercent(summary.idlePct, 1)}`;
         document.getElementById('alert-2-text').textContent = 'Acao: investigar equipamentos com maior tempo parado e revisar janelas operacionais.';
@@ -3035,8 +3195,12 @@
             options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#eef3fb' } }, y: { grid: { display: false } } } }
         });
 
-        document.getElementById('ops-top-label').textContent = `${context.period === 'all' ? 'Consolidado' : context.period} | historico carregado`;
-        document.getElementById('ops-bottom-label').textContent = `${context.period === 'all' ? 'Consolidado' : context.period} | fotografia operacional`;
+        document.getElementById('ops-top-label').textContent = context.vehicle === 'all'
+            ? `${context.period === 'all' ? 'Consolidado' : context.period} | visao geral da frota`
+            : `Equip. ${context.vehicle} | historico do filtro`;
+        document.getElementById('ops-bottom-label').textContent = context.vehicle === 'all'
+            ? `${context.period === 'all' ? 'Consolidado' : context.period} | fotografia operacional da frota`
+            : `Equip. ${context.vehicle} | fotografia operacional`;
         document.getElementById('ops-dist-label').textContent = `Frota filtrada${context.group !== 'all' ? ` | ${context.group}` : ''}`;
         document.getElementById('ops-group-label').textContent = context.group === 'all' ? 'Leitura por operacao' : `Grupo selecionado: ${context.group}`;
         document.getElementById('detail-impact-label').textContent = `Periodo ${context.period === 'all' ? 'consolidado' : context.period}`;

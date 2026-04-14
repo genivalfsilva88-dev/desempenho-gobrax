@@ -13,7 +13,8 @@ const SHEETS = [
   { name: 'Setembro', gid: '801949435', order: 9 },
   { name: 'Outubro', gid: '330406732', order: 10 },
   { name: 'Novembro', gid: '1146622031', order: 11 },
-  { name: 'Dezembro', gid: '1324616894', order: 12 }
+  { name: 'Dezembro', gid: '1324616894', order: 12 },
+  { name: 'Meta', sheetName: 'Meta', order: 99, type: 'meta', optional: true }
 ];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,8 +36,31 @@ function parseGoogleResponse(text) {
   return payload.table;
 }
 
+function normalizeKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function hasMetaColumns(headers) {
+  const normalized = headers.map((header) => normalizeKey(header));
+  return normalized.some((header) => (
+    header === 'meta'
+    || header === 'meta km l'
+    || header === 'meta consumo'
+    || header === 'meta de consumo'
+    || header === 'motorista'
+    || header === 'condutor'
+    || header === 'motorista alocado'
+  ));
+}
+
 async function fetchSheet(sheet) {
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${sheet.gid}&tqx=out:json`;
+  const ref = sheet.gid ? `gid=${sheet.gid}` : `sheet=${encodeURIComponent(sheet.sheetName || sheet.name)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?${ref}&tqx=out:json`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Falha ao baixar ${sheet.name}: ${response.status}`);
@@ -46,6 +70,10 @@ async function fetchSheet(sheet) {
   const text = new TextDecoder('utf-8').decode(buffer);
   const table = parseGoogleResponse(text);
   const headers = table.cols.map((col, index) => col.label || col.id || `col_${index}`);
+  if (sheet.type === 'meta' && !hasMetaColumns(headers)) {
+    if (sheet.optional) return null;
+    throw new Error(`Aba ${sheet.name} nao possui colunas de meta validas.`);
+  }
   const rows = (table.rows || []).map((row) => {
     const out = {};
     headers.forEach((header, index) => {
@@ -58,8 +86,10 @@ async function fetchSheet(sheet) {
 
   return {
     name: sheet.name,
-    gid: sheet.gid,
+    sourceName: sheet.sheetName || sheet.name,
+    gid: sheet.gid || null,
     order: sheet.order,
+    type: sheet.type || null,
     rows
   };
 }
@@ -68,6 +98,10 @@ async function main() {
   const sheets = [];
   for (const sheet of SHEETS) {
     const loaded = await fetchSheet(sheet);
+    if (!loaded) {
+      console.log(`IGNORADO ${sheet.name}: aba sem colunas de meta publicadas`);
+      continue;
+    }
     sheets.push(loaded);
     console.log(`OK ${sheet.name}: ${loaded.rows.length} linhas`);
   }
