@@ -1000,7 +1000,7 @@
 
         <div class="mini-grid">
             <div class="mini-card"><div class="mini-label">Meta atingida</div><div class="mini-value" id="mini-meta">0%</div><div class="mini-sub" id="mini-meta-sub">Metas por veiculo nao carregadas</div></div>
-            <div class="mini-card"><div class="mini-label">Potencial de melhoria</div><div class="mini-value" id="mini-critical">0</div><div class="mini-sub">Equipamentos criticos no filtro</div></div>
+            <div class="mini-card"><div class="mini-label">Desvios relevantes</div><div class="mini-value" id="mini-critical">0</div><div class="mini-sub" id="mini-critical-sub">Equipamentos com tratativa recomendada</div></div>
             <div class="mini-card"><div class="mini-label">Marcha lenta</div><div class="mini-value" id="mini-idle-hours">0h</div><div class="mini-sub">Tempo acumulado em marcha lenta</div></div>
             <div class="mini-card"><div class="mini-label">Abaixo da meta</div><div class="mini-value" id="mini-below-meta">0</div><div class="mini-sub" id="mini-below-meta-sub">Equipamentos abaixo da meta de consumo</div></div>
             <div class="mini-card"><div class="mini-label">Custo estimado</div><div class="mini-value" id="mini-cost-total">R$ 0,00</div><div class="mini-sub">Consumo total x diesel informado</div></div>
@@ -1220,7 +1220,7 @@
                             <th>Nota</th>
                             <th>Class.</th>
                             <th>Motorista</th>
-                            <th>Faixa</th>
+                            <th>Faixa verde</th>
                             <th>Marcha lenta</th>
                         </tr>
                     </thead>
@@ -1535,6 +1535,11 @@
 
     function formatPercent(value, decimals = 1) {
         return `${formatNumber(value, decimals)}%`;
+    }
+
+    function clampPercent(value) {
+        const numeric = Number(value || 0);
+        return Math.max(0, Math.min(numeric, 100));
     }
 
     function formatSigned(value, decimals = 2, suffix = '') {
@@ -2255,6 +2260,8 @@
                     excessoHours: 0,
                     freadasTotal: 0,
                     freadasBase: 0,
+                    faixaPctWeighted: 0,
+                    faixaPctBase: 0,
                     mediaBordoWeighted: 0,
                     mediaBordoBase: 0
                 };
@@ -2271,6 +2278,12 @@
             vehicle.excessoHours += record.excessoHours;
             vehicle.freadasTotal += record.freadas100Km * (record.km > 0 ? record.km : 1);
             vehicle.freadasBase += (record.km > 0 ? record.km : 1);
+
+            if (record.faixaVerdePct > 0) {
+                const weight = record.tempoMovimentoHours > 0 ? record.tempoMovimentoHours : 1;
+                vehicle.faixaPctWeighted += record.faixaVerdePct * weight;
+                vehicle.faixaPctBase += weight;
+            }
 
             if (record.nota > 0) {
                 vehicle.notaTotal += record.nota;
@@ -2293,7 +2306,7 @@
 
         return Object.values(vehicleMap).map((vehicle) => {
             const kmlCalculado = safeDivide(vehicle.km, vehicle.consumo);
-            const faixaVerdePct = safeDivide(vehicle.faixaVerdeHours, vehicle.movimentoHours) * 100;
+            const faixaVerdePct = clampPercent(safeDivide(vehicle.faixaPctWeighted, vehicle.faixaPctBase) || (safeDivide(vehicle.faixaVerdeHours, vehicle.movimentoHours) * 100));
             const excessoPct = safeDivide(vehicle.excessoHours, vehicle.movimentoHours) * 100;
             const notaMedia = safeDivide(vehicle.notaTotal, vehicle.notaCount);
             const expectedConsumo = vehicle.meta > 0 ? safeDivide(vehicle.km, vehicle.meta) : 0;
@@ -2385,11 +2398,18 @@
         const metaMedia = metaVehicles.length
             ? metaVehicles.reduce((sum, item) => sum + item.meta, 0) / metaVehicles.length
             : 0;
+        const improvementVehicles = activeVehicles.filter((item) => {
+            const belowMeta = item.meta > 0 && item.metaGap < 0;
+            const notaRuim = item.notaMedia > 0 && item.notaMedia < 60;
+            const idleAlto = item.idlePct >= 30;
+            return belowMeta || notaRuim || idleAlto;
+        });
         const validation = calcDataValidation(records);
         const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         activeVehicles.forEach((vehicle) => { distribution[vehicle.grade] += 1; });
         const movimentoWeight = (item) => item.tempoMovimentoHours || item.km || 1;
         const idleWeight = (item) => item.idleHours || item.tempoMovimentoHours || 1;
+        const linkedWeight = (item) => (item.tempoMovimentoHours + item.idleHours) || 1;
 
         return {
             records,
@@ -2401,13 +2421,14 @@
             consumo,
             eficiencia: safeDivide(km, consumo),
             notaMedia: notaValores.length ? notaValores.reduce((sum, item) => sum + item.nota, 0) / notaValores.length : 0,
-            faixaVerdePct: safeDivide(faixaVerdeHours, movimentoHours) * 100,
-            movimentoPct: safeDivide(movimentoHours, movimentoHours + idleHours) * 100,
-            idlePct: safeDivide(idleHours, movimentoHours + idleHours) * 100,
+            faixaVerdePct: clampPercent(weightedAverage(records, 'faixaVerdePct', movimentoWeight) || (safeDivide(faixaVerdeHours, movimentoHours) * 100)),
+            movimentoPct: clampPercent(weightedAverage(records, 'movimentoPct', linkedWeight) || (safeDivide(movimentoHours, movimentoHours + idleHours) * 100)),
+            idlePct: clampPercent(weightedAverage(records, 'idlePct', linkedWeight) || (safeDivide(idleHours, movimentoHours + idleHours) * 100)),
             excessoPct: safeDivide(excessoHours, movimentoHours) * 100,
             excessoHours,
             idleHours,
             criticalVehicles: criticalVehicles.length,
+            improvementVehicles: improvementVehicles.length,
             metaVehicles: metaVehicles.length,
             metaHitVehicles: metaHitVehicles.length,
             belowMetaVehicles: belowMetaVehicles.length,
@@ -3004,7 +3025,10 @@
         document.getElementById('mini-meta-sub').textContent = currentSummary.metaVehicles > 0
             ? `${formatNumber(currentSummary.metaHitVehicles, 0)} de ${formatNumber(currentSummary.metaVehicles, 0)} equipamentos com meta`
             : 'Cadastre metas na aba Meta para liberar esta leitura';
-        document.getElementById('mini-critical').textContent = formatNumber(currentSummary.criticalVehicles, 0);
+        document.getElementById('mini-critical').textContent = formatNumber(currentSummary.improvementVehicles, 0);
+        document.getElementById('mini-critical-sub').textContent = currentSummary.improvementVehicles > 0
+            ? 'Equipamentos com meta, nota ou marcha lenta fora do esperado'
+            : 'Nenhum desvio relevante no filtro atual';
         document.getElementById('mini-idle-hours').textContent = formatHours(currentSummary.idleHours);
         document.getElementById('mini-below-meta').textContent = formatNumber(currentSummary.belowMetaVehicles, 0);
         document.getElementById('mini-below-meta-sub').textContent = currentSummary.metaVehicles > 0
@@ -3071,8 +3095,16 @@
         document.getElementById('alert-2-title').textContent = `Marcha lenta media em ${formatPercent(summary.idlePct, 1)}`;
         document.getElementById('alert-2-text').textContent = 'Acao: investigar equipamentos com maior tempo parado e revisar janelas operacionais.';
 
-        document.getElementById('alert-3-title').textContent = `${formatNumber(summary.criticalVehicles, 0)} equipamento(s) com nota critica`;
-        document.getElementById('alert-3-text').textContent = 'Acao: priorizar tratativa nos equipamentos com nota abaixo de 60.';
+        if (summary.criticalVehicles > 0) {
+            document.getElementById('alert-3-title').textContent = `${formatNumber(summary.criticalVehicles, 0)} equipamento(s) com nota critica`;
+            document.getElementById('alert-3-text').textContent = 'Acao: priorizar tratativa nos equipamentos com nota abaixo de 60.';
+        } else if (summary.belowMetaVehicles > 0 || summary.idlePct >= 30) {
+            document.getElementById('alert-3-title').textContent = `${formatNumber(summary.improvementVehicles, 0)} equipamento(s) com desvio relevante`;
+            document.getElementById('alert-3-text').textContent = 'Acao: tratar meta abaixo do alvo e excesso de marcha lenta, mesmo sem nota critica.';
+        } else {
+            document.getElementById('alert-3-title').textContent = 'Sem desvio critico no filtro atual';
+            document.getElementById('alert-3-text').textContent = 'Acao: manter acompanhamento e revisar a meta quando houver mudanca operacional.';
+        }
 
         document.getElementById('alert-4-title').textContent = `Base consistente em ${formatPercent(summary.validation.consistencyPct, 1)} | ${formatNumber(summary.activeVehicles, 0)} equipamentos ativos`;
         document.getElementById('alert-4-text').textContent = `${formatNumber(summary.metaVehicles, 0)} com meta | ${formatNumber(summary.motoristaVehicles, 0)} com motorista | ${formatNumber(summary.validation.mismatches, 0)} divergencia(s) de tempo x percentual.`;
