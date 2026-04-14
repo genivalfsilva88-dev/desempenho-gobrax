@@ -2,39 +2,25 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SPREADSHEET_ID = '1Jh08X0rCtI5rx82Teu4HRnXofHG2CTwGhpCAfKj9sDY';
+const PUBLISHED_DOC_ID = '2PACX-1vSLoNqOJGDJe9FqcOzjsXNNnSGE3h_X04xFtkvi7K4X1fUkGAN968V_hDS9KJtH-lbBbkm-RSVC0Mjr';
 const SHEETS = [
-  { name: 'Marco', gid: '1685318905', order: 3 },
-  { name: 'Abril', gid: '641346232', order: 4 },
-  { name: 'Maio', gid: '322757605', order: 5 },
-  { name: 'Junho', gid: '706345560', order: 6 },
-  { name: 'Julho', gid: '1415754015', order: 7 },
-  { name: 'Agosto', gid: '919511949', order: 8 },
-  { name: 'Setembro', gid: '801949435', order: 9 },
-  { name: 'Outubro', gid: '330406732', order: 10 },
-  { name: 'Novembro', gid: '1146622031', order: 11 },
-  { name: 'Dezembro', gid: '1324616894', order: 12 },
-  { name: 'Meta', sheetName: 'Meta', order: 99, type: 'meta', optional: true }
+  { name: 'Março', gid: '0', order: 3 },
+  { name: 'Abril', gid: '1046930752', order: 4 },
+  { name: 'Maio', gid: '79362452', order: 5 },
+  { name: 'Junho', gid: '967342850', order: 6 },
+  { name: 'Julho', gid: '303673235', order: 7 },
+  { name: 'Agosto', gid: '1720965887', order: 8 },
+  { name: 'Setembro', gid: '993423638', order: 9 },
+  { name: 'Outubro', gid: '842319723', order: 10 },
+  { name: 'Novembro', gid: '163450483', order: 11 },
+  { name: 'Dezembro', gid: '698561355', order: 12 },
+  { name: 'Meta', gid: '1218984725', order: 99, type: 'meta', optional: true },
+  { name: 'Motorista por veiculo', gid: '1093491459', order: 100, type: 'motorista', optional: true }
 ];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
 const outputPath = path.join(projectRoot, 'gobrax-data.js');
-
-function parseGoogleResponse(text) {
-  const start = text.indexOf('(');
-  const end = text.lastIndexOf(')');
-  if (start === -1 || end === -1) {
-    throw new Error('Formato de resposta Google invalido.');
-  }
-
-  const payload = JSON.parse(text.slice(start + 1, end));
-  if (payload.status !== 'ok' || !payload.table) {
-    throw new Error(`Resposta Google sem tabela valida: ${payload.status}`);
-  }
-
-  return payload.table;
-}
 
 function normalizeKey(value) {
   return String(value || '')
@@ -58,36 +44,71 @@ function hasMetaColumns(headers) {
   ));
 }
 
+function parseCsvLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const next = line[index + 1];
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+      continue;
+    }
+
+    current += char;
+  }
+
+  result.push(current);
+  return result;
+}
+
+function parseCsv(text) {
+  const normalized = String(text || '').replace(/^\uFEFF/, '');
+  const lines = normalized.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (!lines.length) return { headers: [], rows: [] };
+
+  const headers = parseCsvLine(lines[0]).map((header) => header.trim());
+  const rows = lines.slice(1).map((line) => {
+    const cells = parseCsvLine(line);
+    return Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? '']));
+  });
+
+  return { headers, rows };
+}
+
 async function fetchSheet(sheet) {
-  const ref = sheet.gid ? `gid=${sheet.gid}` : `sheet=${encodeURIComponent(sheet.sheetName || sheet.name)}`;
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?${ref}&tqx=out:json`;
+  const url = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_DOC_ID}/pub?gid=${sheet.gid}&single=true&output=csv`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Falha ao baixar ${sheet.name}: ${response.status}`);
   }
 
-  const buffer = await response.arrayBuffer();
-  const text = new TextDecoder('utf-8').decode(buffer);
-  const table = parseGoogleResponse(text);
-  const headers = table.cols.map((col, index) => col.label || col.id || `col_${index}`);
-  if (sheet.type === 'meta' && !hasMetaColumns(headers)) {
+  const text = await response.text();
+  const { headers, rows } = parseCsv(text);
+
+  if ((sheet.type === 'meta' || sheet.type === 'motorista') && !hasMetaColumns(headers)) {
     if (sheet.optional) return null;
-    throw new Error(`Aba ${sheet.name} nao possui colunas de meta validas.`);
+    throw new Error(`Aba ${sheet.name} nao possui colunas auxiliares validas.`);
   }
-  const rows = (table.rows || []).map((row) => {
-    const out = {};
-    headers.forEach((header, index) => {
-      const cell = row?.c?.[index];
-      const value = cell?.f ?? cell?.v ?? '';
-      out[header] = value == null ? '' : String(value);
-    });
-    return out;
-  });
 
   return {
     name: sheet.name,
-    sourceName: sheet.sheetName || sheet.name,
-    gid: sheet.gid || null,
+    sourceName: sheet.name,
+    gid: sheet.gid,
     order: sheet.order,
     type: sheet.type || null,
     rows
@@ -107,7 +128,7 @@ async function main() {
   }
 
   const payload = {
-    spreadsheetId: SPREADSHEET_ID,
+    spreadsheetId: PUBLISHED_DOC_ID,
     generatedAt: new Date().toISOString(),
     sheets
   };

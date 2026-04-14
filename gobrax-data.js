@@ -1,11 +1,11 @@
 window.GOBRAX_DATA = {
-  "spreadsheetId": "1Jh08X0rCtI5rx82Teu4HRnXofHG2CTwGhpCAfKj9sDY",
-  "generatedAt": "2026-04-14T13:05:08.570Z",
+  "spreadsheetId": "2PACX-1vSLoNqOJGDJe9FqcOzjsXNNnSGE3h_X04xFtkvi7K4X1fUkGAN968V_hDS9KJtH-lbBbkm-RSVC0Mjr",
+  "generatedAt": "2026-04-14T18:17:22.334Z",
   "sheets": [
     {
-      "name": "Marco",
-      "sourceName": "Marco",
-      "gid": "1685318905",
+      "name": "Março",
+      "sourceName": "Março",
+      "gid": "0",
       "order": 3,
       "type": null,
       "rows": [
@@ -25,10 +25,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "9",
           "Freadas a cada 100 km": "9",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "16:27:10",
           "% Total Motor Ligado Parado": "71,29%",
           "Tempo em Movimento": "06:37:36",
@@ -74,10 +70,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "3",
           "Freadas a cada 100 km": "0,4",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "26:24:46",
           "% Total Motor Ligado Parado": "48,80%",
           "Tempo em Movimento": "27:42:49",
@@ -123,10 +115,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "0",
           "Freadas a cada 100 km": "0",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "00:00:00",
           "% Total Motor Ligado Parado": "0,00%",
           "Tempo em Movimento": "00:00:00",
@@ -172,10 +160,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "15",
           "Freadas totais": "405",
           "Freadas a cada 100 km": "24,1",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "16:45:19",
           "% Total Motor Ligado Parado": "24,70%",
           "Tempo em Movimento": "51:04:48",
@@ -221,10 +205,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "1",
           "Freadas totais": "295",
           "Freadas a cada 100 km": "13",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "06:03:37",
           "% Total Motor Ligado Parado": "9,60%",
           "Tempo em Movimento": "57:03:54",
@@ -270,10 +250,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "0",
           "Freadas a cada 100 km": "0",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "00:08:31",
           "% Total Motor Ligado Parado": "42,60%",
           "Tempo em Movimento": "00:11:28",
@@ -319,10 +295,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "2",
           "Freadas totais": "357",
           "Freadas a cada 100 km": "18,3",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "34:38:45",
           "% Total Motor Ligado Parado": "32,63%",
           "Tempo em Movimento": "71:31:58",
@@ -368,10 +340,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "101",
           "Freadas a cada 100 km": "17,9",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "11:23:52",
           "% Total Motor Ligado Parado": "31,04%",
           "Tempo em Movimento": "25:19:28",
@@ -417,10 +385,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "0",
           "Freadas a cada 100 km": "0",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "00:00:00",
           "% Total Motor Ligado Parado": "0,00%",
           "Tempo em Movimento": "00:00:00",
@@ -466,10 +430,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "1",
           "Freadas totais": "559",
           "Freadas a cada 100 km": "14,7",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "38:00:55",
           "% Total Motor Ligado Parado": "19,79%",
           "Tempo em Movimento": "154:05:24",
@@ -515,10 +475,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "2",
           "Freadas totais": "183",
           "Freadas a cada 100 km": "10,9",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "19:22:43",
           "% Total Motor Ligado Parado": "22,78%",
           "Tempo em Movimento": "65:40:19",
@@ -564,10 +520,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "4",
           "Freadas totais": "248",
           "Freadas a cada 100 km": "21,8",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "15:47:13",
           "% Total Motor Ligado Parado": "25,98%",
           "Tempo em Movimento": "44:58:34",
@@ -613,10 +565,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "449",
           "Freadas totais": "4641",
           "Freadas a cada 100 km": "187,6",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "28:15:00",
           "% Total Motor Ligado Parado": "21,86%",
           "Tempo em Movimento": "100:58:48",
@@ -662,10 +610,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "6",
           "Freadas a cada 100 km": "6",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "05:07:33",
           "% Total Motor Ligado Parado": "70,76%",
           "Tempo em Movimento": "02:07:04",
@@ -711,10 +655,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "571",
           "Freadas totais": "3486",
           "Freadas a cada 100 km": "177,7",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "36:24:40",
           "% Total Motor Ligado Parado": "28,74%",
           "Tempo em Movimento": "90:17:22",
@@ -760,10 +700,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "0",
           "Freadas a cada 100 km": "0",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "00:00:00",
           "% Total Motor Ligado Parado": "0,00%",
           "Tempo em Movimento": "00:00:00",
@@ -809,10 +745,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "301",
           "Freadas a cada 100 km": "19,7",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "40:09:52",
           "% Total Motor Ligado Parado": "38,32%",
           "Tempo em Movimento": "64:38:31",
@@ -858,10 +790,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "4",
           "Freadas totais": "370",
           "Freadas a cada 100 km": "9",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "28:03:49",
           "% Total Motor Ligado Parado": "19,72%",
           "Tempo em Movimento": "114:13:01",
@@ -907,10 +835,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "56",
           "Freadas totais": "621",
           "Freadas a cada 100 km": "7,2",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "43:51:12",
           "% Total Motor Ligado Parado": "18,94%",
           "Tempo em Movimento": "187:44:18",
@@ -956,10 +880,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "210",
           "Freadas a cada 100 km": "11,2",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "04:30:31",
           "% Total Motor Ligado Parado": "8,23%",
           "Tempo em Movimento": "50:17:22",
@@ -1005,10 +925,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "17",
           "Freadas totais": "232",
           "Freadas a cada 100 km": "4,8",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "23:35:25",
           "% Total Motor Ligado Parado": "19,59%",
           "Tempo em Movimento": "96:50:49",
@@ -1054,10 +970,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "18",
           "Freadas totais": "421",
           "Freadas a cada 100 km": "6",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "65:14:07",
           "% Total Motor Ligado Parado": "26,66%",
           "Tempo em Movimento": "179:25:28",
@@ -1103,10 +1015,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "25",
           "Freadas totais": "420",
           "Freadas a cada 100 km": "6",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "51:23:39",
           "% Total Motor Ligado Parado": "24,48%",
           "Tempo em Movimento": "158:32:10",
@@ -1152,10 +1060,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "7",
           "Freadas totais": "360",
           "Freadas a cada 100 km": "5,7",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "49:41:34",
           "% Total Motor Ligado Parado": "25,25%",
           "Tempo em Movimento": "147:04:45",
@@ -1201,10 +1105,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "59",
           "Freadas totais": "601",
           "Freadas a cada 100 km": "8,3",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "47:44:25",
           "% Total Motor Ligado Parado": "23,01%",
           "Tempo em Movimento": "159:44:25",
@@ -1250,10 +1150,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "0",
           "Freadas a cada 100 km": "0",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "00:08:01",
           "% Total Motor Ligado Parado": "57,15%",
           "Tempo em Movimento": "00:06:01",
@@ -1299,10 +1195,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "41",
           "Freadas totais": "610",
           "Freadas a cada 100 km": "7,7",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "39:57:15",
           "% Total Motor Ligado Parado": "16,94%",
           "Tempo em Movimento": "195:58:07",
@@ -1348,10 +1240,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "2",
           "Freadas totais": "22",
           "Freadas a cada 100 km": "0,6",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "16:48:31",
           "% Total Motor Ligado Parado": "17,16%",
           "Tempo em Movimento": "81:09:04",
@@ -1397,10 +1285,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "0",
           "Freadas a cada 100 km": "0",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "35:58:19",
           "% Total Motor Ligado Parado": "25,92%",
           "Tempo em Movimento": "102:48:28",
@@ -1446,10 +1330,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "0",
           "Freadas totais": "218",
           "Freadas a cada 100 km": "20,1",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "19:15:04",
           "% Total Motor Ligado Parado": "32,82%",
           "Tempo em Movimento": "39:24:40",
@@ -1495,10 +1375,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "3",
           "Freadas totais": "308",
           "Freadas a cada 100 km": "23,8",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "0,00%",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "0,00%",
           "Total Motor Ligado Parado": "11:37:00",
           "% Total Motor Ligado Parado": "26,50%",
           "Tempo em Movimento": "32:13:28",
@@ -1544,10 +1420,6 @@ window.GOBRAX_DATA = {
           "Freadas em Alta velocidade": "",
           "Freadas totais": "",
           "Freadas a cada 100 km": "",
-          "Motor Ligado Parado": "00:00:00",
-          "% Motor Ligado Parado": "",
-          "Motor Ligado Parado Em Alta Rotação": "00:00:00",
-          "% Motor Ligado Parado Em Alta Rotação": "",
           "Total Motor Ligado Parado": "732:48:58",
           "% Total Motor Ligado Parado": "",
           "Tempo em Movimento": "2307:50:19",
@@ -1582,7 +1454,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Abril",
       "sourceName": "Abril",
-      "gid": "641346232",
+      "gid": "1046930752",
       "order": 4,
       "type": null,
       "rows": []
@@ -1590,7 +1462,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Maio",
       "sourceName": "Maio",
-      "gid": "322757605",
+      "gid": "79362452",
       "order": 5,
       "type": null,
       "rows": []
@@ -1598,7 +1470,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Junho",
       "sourceName": "Junho",
-      "gid": "706345560",
+      "gid": "967342850",
       "order": 6,
       "type": null,
       "rows": []
@@ -1606,7 +1478,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Julho",
       "sourceName": "Julho",
-      "gid": "1415754015",
+      "gid": "303673235",
       "order": 7,
       "type": null,
       "rows": []
@@ -1614,7 +1486,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Agosto",
       "sourceName": "Agosto",
-      "gid": "919511949",
+      "gid": "1720965887",
       "order": 8,
       "type": null,
       "rows": []
@@ -1622,7 +1494,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Setembro",
       "sourceName": "Setembro",
-      "gid": "801949435",
+      "gid": "993423638",
       "order": 9,
       "type": null,
       "rows": []
@@ -1630,7 +1502,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Outubro",
       "sourceName": "Outubro",
-      "gid": "330406732",
+      "gid": "842319723",
       "order": 10,
       "type": null,
       "rows": []
@@ -1638,7 +1510,7 @@ window.GOBRAX_DATA = {
     {
       "name": "Novembro",
       "sourceName": "Novembro",
-      "gid": "1146622031",
+      "gid": "163450483",
       "order": 11,
       "type": null,
       "rows": []
@@ -1646,10 +1518,400 @@ window.GOBRAX_DATA = {
     {
       "name": "Dezembro",
       "sourceName": "Dezembro",
-      "gid": "1324616894",
+      "gid": "698561355",
       "order": 12,
       "type": null,
       "rows": []
+    },
+    {
+      "name": "Meta",
+      "sourceName": "Meta",
+      "gid": "1218984725",
+      "order": 99,
+      "type": "meta",
+      "rows": [
+        {
+          "Frota": "150",
+          "Placa": "KNM9F91",
+          "Modelo": "SCANIA/G 420",
+          "Grupo de Veículos": "Operação Redex",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "171",
+          "Placa": "LKZ8C47",
+          "Modelo": "SCANIA/P 310",
+          "Grupo de Veículos": "Operação Vazio",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "172",
+          "Placa": "LLA8G50",
+          "Modelo": "VW/24.250 CLC",
+          "Grupo de Veículos": "XZ TRANSPORTES",
+          "Meta": "4"
+        },
+        {
+          "Frota": "173",
+          "Placa": "KNW2J38",
+          "Modelo": "VW/13.180",
+          "Grupo de Veículos": "XZ TRANSPORTES",
+          "Meta": "4"
+        },
+        {
+          "Frota": "177",
+          "Placa": "KZK2E10",
+          "Modelo": "SCANIA/R 420",
+          "Grupo de Veículos": "Operação Redex",
+          "Meta": "2,8"
+        },
+        {
+          "Frota": "181",
+          "Placa": "LLI2F10",
+          "Modelo": "VW/19.320",
+          "Grupo de Veículos": "Operação Vazio",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "188",
+          "Placa": "LPT9A89",
+          "Modelo": "SCANIA/R 420",
+          "Grupo de Veículos": "Operação Redex",
+          "Meta": "2,8"
+        },
+        {
+          "Frota": "190",
+          "Placa": "KVJ9G66",
+          "Modelo": "SCANIA/R 420",
+          "Grupo de Veículos": "Operação Redex",
+          "Meta": "2,8"
+        },
+        {
+          "Frota": "203",
+          "Placa": "LLO1333",
+          "Modelo": "SCANIA/P 340",
+          "Grupo de Veículos": "XZ TRANSPORTES",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "222",
+          "Placa": "KOW6F24",
+          "Modelo": "VW/24.250 CNC",
+          "Grupo de Veículos": "OPERAÇÃO MUNCK",
+          "Meta": "3,5"
+        },
+        {
+          "Frota": "227",
+          "Placa": "LLT6B06",
+          "Modelo": "VW/19.330 CTC",
+          "Grupo de Veículos": "Operação Vazio",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "229",
+          "Placa": "LLT6B02",
+          "Modelo": "VW/19.330 CTC",
+          "Grupo de Veículos": "Operação Vazio",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "230",
+          "Placa": "LQN4F96",
+          "Modelo": "VW/19.330 CTC",
+          "Grupo de Veículos": "Operação Vazio",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "231",
+          "Placa": "LRA1E88",
+          "Modelo": "SCANIA/R 440",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "2,8"
+        },
+        {
+          "Frota": "236",
+          "Placa": "KWC5138",
+          "Modelo": "SCANIA/P 360",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "238",
+          "Placa": "KPD6B43",
+          "Modelo": "VOLVO/VM 270",
+          "Grupo de Veículos": "XZ TRANSPORTES",
+          "Meta": "3"
+        },
+        {
+          "Frota": "243",
+          "Placa": "LSE9F88",
+          "Modelo": "SCANIA/P 360",
+          "Grupo de Veículos": "Operação Baker",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "244",
+          "Placa": "KRH8082",
+          "Modelo": "SCANIA/P 360",
+          "Grupo de Veículos": "Operação Baker",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "245",
+          "Placa": "KWW9A65",
+          "Modelo": "SCANIA/P 360",
+          "Grupo de Veículos": "Operação Baker",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "246",
+          "Placa": "LSE9591",
+          "Modelo": "SCANIA/P 360",
+          "Grupo de Veículos": "Operação Baker",
+          "Meta": "2,5"
+        },
+        {
+          "Frota": "247",
+          "Placa": "LSF8B12",
+          "Modelo": "SCANIA/R 480",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "284",
+          "Placa": "TTC9B61",
+          "Modelo": "XF FTS EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "285",
+          "Placa": "TTX5D85",
+          "Modelo": "XF FTS EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "286",
+          "Placa": "TTU6J59",
+          "Modelo": "XF FTS EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "287",
+          "Placa": "TTY5A07",
+          "Modelo": "XF FTS EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "288",
+          "Placa": "TUL2J59",
+          "Modelo": "XF FTS EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "289",
+          "Placa": "TTY5D31",
+          "Modelo": "XF FTT EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "290",
+          "Placa": "TTX5E12",
+          "Modelo": "XF FTT EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "291",
+          "Placa": "TTC8J52",
+          "Modelo": "XF FTT EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "292",
+          "Placa": "TTX5A80",
+          "Modelo": "XF FTT EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        },
+        {
+          "Frota": "293",
+          "Placa": "TTX5A81",
+          "Modelo": "XF FTT EURO 6",
+          "Grupo de Veículos": "Rodoviário",
+          "Meta": "1,9"
+        }
+      ]
+    },
+    {
+      "name": "Motorista por veiculo",
+      "sourceName": "Motorista por veiculo",
+      "gid": "1093491459",
+      "order": 100,
+      "type": "motorista",
+      "rows": [
+        {
+          "Frota": "150",
+          "Placa": "KNM9F91",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "171",
+          "Placa": "LKZ8C47",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "172",
+          "Placa": "LLA8G50",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "173",
+          "Placa": "KNW2J38",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "177",
+          "Placa": "KZK2E10",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "181",
+          "Placa": "LLI2F10",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "188",
+          "Placa": "LPT9A89",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "190",
+          "Placa": "KVJ9G66",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "203",
+          "Placa": "LLO1333",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "222",
+          "Placa": "KOW6F24",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "227",
+          "Placa": "LLT6B06",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "229",
+          "Placa": "LLT6B02",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "230",
+          "Placa": "LQN4F96",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "231",
+          "Placa": "LRA1E88",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "236",
+          "Placa": "KWC5138",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "238",
+          "Placa": "KPD6B43",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "243",
+          "Placa": "LSE9F88",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "244",
+          "Placa": "KRH8082",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "245",
+          "Placa": "KWW9A65",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "246",
+          "Placa": "LSE9591",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "247",
+          "Placa": "LSF8B12",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "284",
+          "Placa": "TTC9B61",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "285",
+          "Placa": "TTX5D85",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "286",
+          "Placa": "TTU6J59",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "287",
+          "Placa": "TTY5A07",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "288",
+          "Placa": "TUL2J59",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "289",
+          "Placa": "TTY5D31",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "290",
+          "Placa": "TTX5E12",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "291",
+          "Placa": "TTC8J52",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "292",
+          "Placa": "TTX5A80",
+          "Motorista": "Genival Silva"
+        },
+        {
+          "Frota": "293",
+          "Placa": "TTX5A81",
+          "Motorista": "Genival Silva"
+        }
+      ]
     }
   ]
 };

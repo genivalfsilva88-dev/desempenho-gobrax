@@ -1226,19 +1226,20 @@
 </main>
 
 <script>
-    const SPREADSHEET_ID = '1Jh08X0rCtI5rx82Teu4HRnXofHG2CTwGhpCAfKj9sDY';
+    const PUBLISHED_DOC_ID = '2PACX-1vSLoNqOJGDJe9FqcOzjsXNNnSGE3h_X04xFtkvi7K4X1fUkGAN968V_hDS9KJtH-lbBbkm-RSVC0Mjr';
     const SHEET_CONFIG = [
-        { name: 'Marco', sourceName: 'Março', gid: '1685318905', order: 3 },
-        { name: 'Abril', sourceName: 'Abril', gid: '641346232', order: 4 },
-        { name: 'Maio', sourceName: 'Maio', gid: '322757605', order: 5 },
-        { name: 'Junho', sourceName: 'Junho', gid: '706345560', order: 6 },
-        { name: 'Julho', sourceName: 'Julho', gid: '1415754015', order: 7 },
-        { name: 'Agosto', sourceName: 'Agosto', gid: '919511949', order: 8 },
-        { name: 'Setembro', sourceName: 'Setembro', gid: '801949435', order: 9 },
-        { name: 'Outubro', sourceName: 'Outubro', gid: '330406732', order: 10 },
-        { name: 'Novembro', sourceName: 'Novembro', gid: '1146622031', order: 11 },
-        { name: 'Dezembro', sourceName: 'Dezembro', gid: '1324616894', order: 12 },
-        { name: 'Meta', sourceName: 'Meta', order: 99, type: 'meta', optional: true }
+        { name: 'Março', sourceName: 'Março', gid: '0', order: 3 },
+        { name: 'Abril', sourceName: 'Abril', gid: '1046930752', order: 4 },
+        { name: 'Maio', sourceName: 'Maio', gid: '79362452', order: 5 },
+        { name: 'Junho', sourceName: 'Junho', gid: '967342850', order: 6 },
+        { name: 'Julho', sourceName: 'Julho', gid: '303673235', order: 7 },
+        { name: 'Agosto', sourceName: 'Agosto', gid: '1720965887', order: 8 },
+        { name: 'Setembro', sourceName: 'Setembro', gid: '993423638', order: 9 },
+        { name: 'Outubro', sourceName: 'Outubro', gid: '842319723', order: 10 },
+        { name: 'Novembro', sourceName: 'Novembro', gid: '163450483', order: 11 },
+        { name: 'Dezembro', sourceName: 'Dezembro', gid: '698561355', order: 12 },
+        { name: 'Meta', sourceName: 'Meta', gid: '1218984725', order: 99, type: 'meta', optional: true },
+        { name: 'Motorista por veiculo', sourceName: 'Motorista por veiculo', gid: '1093491459', order: 100, type: 'motorista', optional: true }
     ];
 
     const CONNECTION_METHODS = [
@@ -1673,11 +1674,13 @@
         return 'bar-red';
     }
 
-    function isMetaSheet(sheet) {
-        return normalizeKey(sheet?.type) === 'meta' || normalizeKey(sheet?.name) === 'meta' || normalizeKey(sheet?.sourceName) === 'meta';
+    function isAuxiliarySheet(sheet) {
+        const type = normalizeKey(sheet?.type);
+        const name = normalizeKey(sheet?.name || sheet?.sourceName);
+        return type === 'meta' || type === 'motorista' || name === 'meta' || name === 'motorista por veiculo';
     }
 
-    function rowHasMetaFields(rawRow) {
+    function rowHasAuxiliaryFields(rawRow) {
         const row = buildNormalizedRow(rawRow);
         const metaValue = parseLocaleNumber(getField(row, ['meta', 'meta km l', 'meta km/l', 'meta consumo', 'meta de consumo']));
         const motorista = String(getField(row, ['motorista', 'condutor', 'motorista alocado'])).trim();
@@ -1686,17 +1689,16 @@
 
     function shouldAcceptSheet(sheet, rows) {
         if (!Array.isArray(rows) || !rows.length) return false;
-        if (!isMetaSheet(sheet)) return true;
-        return rows.some((row) => rowHasMetaFields(row));
+        if (!isAuxiliarySheet(sheet)) return true;
+        return rows.some((row) => rowHasAuxiliaryFields(row));
     }
 
     function buildSheetRefParam(sheet) {
-        if (sheet.gid) return `gid=${sheet.gid}`;
-        return `sheet=${encodeURIComponent(sheet.sourceName || sheet.name)}`;
+        return `gid=${sheet.gid}`;
     }
 
     function buildSheetUrl(sheet) {
-        return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&${buildSheetRefParam(sheet)}`;
+        return `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_DOC_ID}/pub?${buildSheetRefParam(sheet)}&single=true&output=csv`;
     }
 
     function getBundledSheets() {
@@ -1757,7 +1759,7 @@
                 reject(new Error(`Falha ao carregar aba ${sheet.name}`));
             };
 
-            script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?${buildSheetRefParam(sheet)}&tqx=responseHandler:${callbackName}`;
+            script.src = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_DOC_ID}/gviz/tq?${buildSheetRefParam(sheet)}&tqx=responseHandler:${callbackName}`;
             document.head.appendChild(script);
         });
     }
@@ -1917,7 +1919,7 @@
         }
 
         sheets
-            .filter((sheet) => isMetaSheet(sheet))
+            .filter((sheet) => isAuxiliarySheet(sheet))
             .forEach((sheet) => {
                 sheet.rows.forEach((rawRow) => {
                     const row = buildNormalizedRow(rawRow);
@@ -1943,7 +1945,7 @@
                 || null;
         }
 
-        sheets.filter((sheet) => !isMetaSheet(sheet)).forEach((sheet) => {
+        sheets.filter((sheet) => !isAuxiliarySheet(sheet)).forEach((sheet) => {
             const periodLabel = inferMonthLabel(sheet.name);
             const periodOrder = sheet.order || inferMonthOrder(sheet.name);
             if (sheet.rows && sheet.rows.length) periodMap.set(periodLabel, periodOrder);
