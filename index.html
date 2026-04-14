@@ -880,6 +880,7 @@
         <div class="meta-left">
             <div id="status-display" class="soft-pill">Carregando planilha...</div>
             <div class="soft-pill" id="last-update-pill">Atualizando base</div>
+            <div class="soft-pill" id="data-quality-pill">Validando consistencia</div>
         </div>
         <div class="meta-right">
             <div id="month-chip-list" class="meta-right"></div>
@@ -1127,7 +1128,7 @@
                     <div class="ops-stat-item"><div class="ops-stat-label">Consumo total</div><div id="ops-stat-consumo" class="ops-stat-value">0 L</div><div class="ops-stat-sub">Diesel consumido</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Media do bordo</div><div id="ops-stat-board" class="ops-stat-value">0 km/l</div><div class="ops-stat-sub">Computador de bordo</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Odometro</div><div id="ops-stat-odometro" class="ops-stat-value">0</div><div class="ops-stat-sub">Leitura mais recente</div></div>
-                    <div class="ops-stat-item"><div class="ops-stat-label">Tempo em movimento</div><div id="ops-stat-movimento" class="ops-stat-value">0h</div><div class="ops-stat-sub">Uso produtivo</div></div>
+                    <div class="ops-stat-item"><div class="ops-stat-label">Tempo em movimento</div><div id="ops-stat-movimento" class="ops-stat-value">0h</div><div id="ops-stat-movimento-sub" class="ops-stat-sub">Uso produtivo</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Meta</div><div id="ops-stat-meta" class="ops-stat-value">--</div><div id="ops-stat-meta-sub" class="ops-stat-sub">Meta cadastrada para o filtro</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Desvio da meta</div><div id="ops-stat-gap" class="ops-stat-value">--</div><div id="ops-stat-gap-sub" class="ops-stat-sub">Realizado contra meta de consumo</div></div>
                     <div class="ops-stat-item"><div class="ops-stat-label">Motorista</div><div id="ops-stat-driver" class="ops-stat-value">--</div><div id="ops-stat-driver-sub" class="ops-stat-sub">Alocacao atual do equipamento</div></div>
@@ -1470,6 +1471,50 @@
         const minutes = totalMinutes % 60;
         if (!hours) return `${minutes}min`;
         return minutes ? `${hours}h ${minutes}min` : `${hours}h`;
+    }
+
+    function compareTimePct(hours, baseHours, pct, tolerance = 2) {
+        if (!Number.isFinite(baseHours) || baseHours <= 0) return null;
+        if (!Number.isFinite(hours) || !Number.isFinite(pct)) return null;
+        const recalculated = safeDivide(hours, baseHours) * 100;
+        return {
+            recalculated,
+            diff: Math.abs(recalculated - pct),
+            ok: Math.abs(recalculated - pct) <= tolerance
+        };
+    }
+
+    function calcDataValidation(records) {
+        let checks = 0;
+        let mismatches = 0;
+
+        records.forEach((item) => {
+            const totalLigado = item.tempoMovimentoHours + item.idleHours;
+            const validations = [
+                compareTimePct(item.tempoMovimentoHours, totalLigado, item.movimentoPct || 0, 2),
+                compareTimePct(item.idleHours, totalLigado, item.idlePct || 0, 2),
+                compareTimePct(item.faixaVerdeHours, item.tempoMovimentoHours, item.faixaVerdePct || 0, 2),
+                compareTimePct(item.inicioFaixaHours, item.tempoMovimentoHours, item.inicioFaixaPct || 0, 2),
+                compareTimePct(item.finalFaixaHours, item.tempoMovimentoHours, item.finalFaixaPct || 0, 2),
+                compareTimePct(item.acimaVerdeHours, item.tempoMovimentoHours, item.acimaVerdePct || 0, 2),
+                compareTimePct(item.embaloHours, item.tempoMovimentoHours, item.embaloPct || 0, 2),
+                compareTimePct(item.freioMotorHours, item.tempoMovimentoHours, item.freioMotorPct || 0, 2),
+                compareTimePct(item.pilotoAutomaticoHours, item.tempoMovimentoHours, item.pilotoAutomaticoPct || 0, 2),
+                compareTimePct(item.ecoRollHours, item.tempoMovimentoHours, item.ecoRollPct || 0, 2)
+            ].filter(Boolean);
+
+            validations.forEach((validation) => {
+                checks += 1;
+                if (!validation.ok) mismatches += 1;
+            });
+        });
+
+        const consistencyPct = checks ? safeDivide(checks - mismatches, checks) * 100 : 100;
+        return {
+            checks,
+            mismatches,
+            consistencyPct
+        };
     }
 
     function formatClockDuration(value) {
@@ -2010,6 +2055,7 @@
                 const pedalIdealPct = parsePercent(getField(row, ['% pedal ideal']));
                 const pedalAtencaoPct = parsePercent(getField(row, ['% pedal atencao']));
                 const pedalCriticoPct = parsePercent(getField(row, ['% pedal critico']));
+                const movimentoPct = parsePercent(getField(row, ['% tempo em movimento']));
                 const freadas100Km = parseLocaleNumber(getField(row, ['freadas a cada 100 km']));
 
                 const hasRelevantData = km > 0 || consumo > 0 || nota > 0 || tempoMovimentoHours > 0 || faixaVerdeHours > 0;
@@ -2036,6 +2082,7 @@
                     freadasTotais,
                     faixaVerdeHours,
                     tempoMovimentoHours,
+                    movimentoPct,
                     idleHours,
                     idlePct,
                     idleHighRpmHours,
@@ -2338,6 +2385,7 @@
         const metaMedia = metaVehicles.length
             ? metaVehicles.reduce((sum, item) => sum + item.meta, 0) / metaVehicles.length
             : 0;
+        const validation = calcDataValidation(records);
         const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         activeVehicles.forEach((vehicle) => { distribution[vehicle.grade] += 1; });
         const movimentoWeight = (item) => item.tempoMovimentoHours || item.km || 1;
@@ -2371,6 +2419,7 @@
             motoristaVehicles,
             motoristaCoveragePct: safeDivide(motoristaVehicles, activeVehicles.length) * 100,
             distMedia: safeDivide(km, activeVehicles.length),
+            validation,
             distribution,
             idleHighRpmPct: weightedAverage(records, 'idleHighRpmPct', idleWeight),
             inicioFaixaPct: weightedAverage(records, 'inicioFaixaPct', movimentoWeight),
@@ -2415,6 +2464,7 @@
         const focusFaixaHours = scopedRecords.reduce((sum, item) => sum + item.faixaVerdeHours, 0);
         const focusMovimentoHours = scopedRecords.reduce((sum, item) => sum + item.tempoMovimentoHours, 0);
         const focusFreioMotorHours = scopedRecords.reduce((sum, item) => sum + item.freioMotorHours, 0);
+        const totalLinkedHours = focusMovimentoHours + focusIdleHours;
         const pedalIdealHours = scopedRecords.reduce((sum, item) => sum + item.pedalIdealHours, 0);
         const pedalAtencaoHours = scopedRecords.reduce((sum, item) => sum + item.pedalAtencaoHours, 0);
         const pedalCriticoHours = scopedRecords.reduce((sum, item) => sum + item.pedalCriticoHours, 0);
@@ -2449,6 +2499,7 @@
             mediaBordo: weightedAverage(scopedRecords, 'mediaBordo', kmWeight),
             odometro: Math.max(...scopedRecords.map((item) => item.odometro || 0), 0),
             movimentoHours: focusMovimentoHours,
+            movimentoPct: safeDivide(focusMovimentoHours, totalLinkedHours) * 100,
             meta: vehicle ? (vehicle.meta || 0) : (currentSummary.metaMedia || 0),
             metaGap: vehicle ? vehicle.metaGap : currentSummary.metaGapMedio,
             potencialLitros: vehicle ? vehicle.potencialLitros : currentSummary.potencialLitros,
@@ -2623,7 +2674,8 @@
         document.getElementById('ops-stat-consumo').textContent = `${formatNumber(focus.consumo, 0)} L`;
         document.getElementById('ops-stat-board').textContent = `${formatNumber(focus.mediaBordo, 2)} km/l`;
         document.getElementById('ops-stat-odometro').textContent = formatNumber(focus.odometro, 0);
-        document.getElementById('ops-stat-movimento').textContent = formatClockDuration(focus.movimentoHours);
+        document.getElementById('ops-stat-movimento').textContent = formatHours(focus.movimentoHours);
+        document.getElementById('ops-stat-movimento-sub').textContent = `${formatPercent(focus.movimentoPct, 1)} do tempo ligado em uso produtivo`;
         document.getElementById('ops-stat-meta').textContent = formatMetricOrDash(focus.meta, 2, ' km/l');
         const gapEl = document.getElementById('ops-stat-gap');
         gapEl.textContent = focus.meta > 0 ? formatSigned(focus.metaGap, 2, ' km/l') : '--';
@@ -2903,11 +2955,13 @@
         const dieselPrice = getDieselPrice();
         const totalCost = currentSummary.consumo * dieselPrice;
         const costPerKm = safeDivide(totalCost, currentSummary.km);
+        const validation = currentSummary.validation || { consistencyPct: 100, checks: 0, mismatches: 0 };
         const baseStamp = DATASET_META.generatedAt
             ? `Base ${new Date(DATASET_META.generatedAt).toLocaleString('pt-BR')}`
             : `Carga ${new Date(DATASET_META.loadedAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
         document.getElementById('last-update-pill').textContent = `${DATASET_META.label} | ${baseStamp}`;
-        document.getElementById('period-summary-pill').textContent = `Periodo: ${periodLabel}${context.group !== 'all' ? ` | Grupo: ${context.group}` : ''}${context.vehicle !== 'all' ? ` | Equip.: ${context.vehicle}` : ''} | ${formatNumber(currentRecords.length, 0)} registros validos`;
+        document.getElementById('period-summary-pill').textContent = `Periodo: ${periodLabel}${context.group !== 'all' ? ` | Grupo: ${context.group}` : ''}${context.vehicle !== 'all' ? ` | Equip.: ${context.vehicle}` : ''} | ${formatNumber(currentRecords.length, 0)} registros | ${formatNumber(currentSummary.activeVehicles, 0)} ativos`;
+        document.getElementById('data-quality-pill').textContent = `Consistencia tempo x %: ${formatPercent(validation.consistencyPct, 1)} | ${formatNumber(validation.checks, 0)} checagens`;
         document.querySelectorAll('.month-chip').forEach((chip) => chip.classList.toggle('active', chip.textContent === context.period));
 
         document.getElementById('hero-idle').textContent = formatPercent(currentSummary.idlePct, 1);
@@ -3020,8 +3074,8 @@
         document.getElementById('alert-3-title').textContent = `${formatNumber(summary.criticalVehicles, 0)} equipamento(s) com nota critica`;
         document.getElementById('alert-3-text').textContent = 'Acao: priorizar tratativa nos equipamentos com nota abaixo de 60.';
 
-        document.getElementById('alert-4-title').textContent = `Faixa verde em ${formatPercent(summary.faixaVerdePct, 1)} | Embalo em ${formatPercent(summary.embaloPct, 1)}`;
-        document.getElementById('alert-4-text').textContent = 'Acao: combinar uso da faixa verde com embalo e freio motor para melhorar o consumo.';
+        document.getElementById('alert-4-title').textContent = `Base consistente em ${formatPercent(summary.validation.consistencyPct, 1)} | ${formatNumber(summary.activeVehicles, 0)} equipamentos ativos`;
+        document.getElementById('alert-4-text').textContent = `${formatNumber(summary.metaVehicles, 0)} com meta | ${formatNumber(summary.motoristaVehicles, 0)} com motorista | ${formatNumber(summary.validation.mismatches, 0)} divergencia(s) de tempo x percentual.`;
     }
 
     function renderComparisons(currentSummary, previousSummary, previousPeriod) {
