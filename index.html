@@ -852,6 +852,17 @@
                 </select>
             </div>
             <div class="control-block">
+                <label class="control-label" for="grade-filter">Classificacao</label>
+                <select id="grade-filter" class="month-select" onchange="aplicarFiltro()">
+                    <option value="all">Todas as classes</option>
+                    <option value="A">Classe A</option>
+                    <option value="B">Classe B</option>
+                    <option value="C">Classe C</option>
+                    <option value="D">Classe D</option>
+                    <option value="E">Classe E</option>
+                </select>
+            </div>
+            <div class="control-block">
                 <label class="control-label" for="diesel-price">Diesel (R$/L)</label>
                 <input id="diesel-price" class="month-select" type="number" min="0" step="0.01" value="6.30" onchange="handleDieselInputChange()">
             </div>
@@ -2198,12 +2209,23 @@
         return select.value;
     }
 
-    function applySecondaryFilters(records, selectedGroup, selectedVehicle) {
-        return records.filter((record) => {
+    function filterRecordsByGrade(records, selectedGrade) {
+        if (selectedGrade === 'all') return records;
+        const allowedIds = new Set(
+            aggregateVehicles(records)
+                .filter((vehicle) => vehicle.grade === selectedGrade)
+                .map((vehicle) => vehicle.id)
+        );
+        return records.filter((record) => allowedIds.has(record.frota || record.placa || record.modelo));
+    }
+
+    function applySecondaryFilters(records, selectedGroup, selectedVehicle, selectedGrade = 'all') {
+        const filteredByBase = records.filter((record) => {
             const groupOk = selectedGroup === 'all' || record.grupo === selectedGroup;
             const vehicleOk = selectedVehicle === 'all' || record.frota === selectedVehicle;
             return groupOk && vehicleOk;
         });
+        return filterRecordsByGrade(filteredByBase, selectedGrade);
     }
 
     function aplicarFiltro() {
@@ -2215,18 +2237,19 @@
         const previousGroup = document.getElementById('group-filter')?.value || 'all';
         const selectedGroup = fillSelectOptions('group-filter', baseRecords.map((item) => item.grupo), 'Todos os grupos', previousGroup);
 
-        const recordsByGroup = applySecondaryFilters(baseRecords, selectedGroup, 'all');
+        const selectedGrade = document.getElementById('grade-filter')?.value || 'all';
+        const recordsByGroup = applySecondaryFilters(baseRecords, selectedGroup, 'all', selectedGrade);
         const previousVehicle = document.getElementById('vehicle-filter')?.value || 'all';
         const selectedVehicle = fillSelectOptions('vehicle-filter', recordsByGroup.map((item) => item.frota), 'Todos os equipamentos', previousVehicle);
 
-        const currentRecords = applySecondaryFilters(baseRecords, selectedGroup, selectedVehicle);
+        const currentRecords = applySecondaryFilters(baseRecords, selectedGroup, selectedVehicle, selectedGrade);
 
         const currentIndex = PERIODS_LIST.indexOf(selectedPeriod);
         const previousPeriod = selectedPeriod !== 'all' && currentIndex >= 0 ? PERIODS_LIST[currentIndex + 1] : null;
         const previousBaseRecords = previousPeriod
             ? GLOBAL_DATA.filter((item) => item.periodLabel === previousPeriod)
             : [];
-        const previousRecords = applySecondaryFilters(previousBaseRecords, selectedGroup, selectedVehicle);
+        const previousRecords = applySecondaryFilters(previousBaseRecords, selectedGroup, selectedVehicle, selectedGrade);
 
         const currentSummary = calcResumo(currentRecords);
         const previousSummary = calcResumo(previousRecords);
@@ -2235,7 +2258,8 @@
             period: selectedPeriod,
             previousPeriod,
             group: selectedGroup,
-            vehicle: selectedVehicle
+            vehicle: selectedVehicle,
+            grade: selectedGrade
         });
     }
 
@@ -2856,11 +2880,11 @@
     function updateCharts(currentRecords) {
         const trendLabels = PERIODS_LIST.slice().reverse();
         const trendEfficiency = trendLabels.map((period) => {
-            const filtered = applySecondaryFilters(GLOBAL_DATA.filter((item) => item.periodLabel === period), context.group, context.vehicle);
+            const filtered = applySecondaryFilters(GLOBAL_DATA.filter((item) => item.periodLabel === period), context.group, context.vehicle, context.grade);
             return calcResumo(filtered).eficiencia;
         });
         const trendScore = trendLabels.map((period) => {
-            const filtered = applySecondaryFilters(GLOBAL_DATA.filter((item) => item.periodLabel === period), context.group, context.vehicle);
+            const filtered = applySecondaryFilters(GLOBAL_DATA.filter((item) => item.periodLabel === period), context.group, context.vehicle, context.grade);
             return calcResumo(filtered).notaMedia;
         });
 
@@ -2996,7 +3020,7 @@
             ? `Base ${new Date(DATASET_META.generatedAt).toLocaleString('pt-BR')}`
             : `Carga ${new Date(DATASET_META.loadedAt || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
         document.getElementById('last-update-pill').textContent = `${DATASET_META.label} | ${baseStamp}`;
-        document.getElementById('period-summary-pill').textContent = `Periodo: ${periodLabel}${context.group !== 'all' ? ` | Grupo: ${context.group}` : ''}${context.vehicle !== 'all' ? ` | Equip.: ${context.vehicle}` : ''} | ${formatNumber(currentRecords.length, 0)} registros | ${formatNumber(currentSummary.activeVehicles, 0)} ativos`;
+        document.getElementById('period-summary-pill').textContent = `Periodo: ${periodLabel}${context.group !== 'all' ? ` | Grupo: ${context.group}` : ''}${context.vehicle !== 'all' ? ` | Equip.: ${context.vehicle}` : ''}${context.grade !== 'all' ? ` | Classe: ${context.grade}` : ''} | ${formatNumber(currentRecords.length, 0)} registros | ${formatNumber(currentSummary.activeVehicles, 0)} ativos`;
         document.getElementById('data-quality-pill').textContent = `Consistencia tempo x %: ${formatPercent(validation.consistencyPct, 1)} | ${formatNumber(validation.checks, 0)} checagens`;
         document.querySelectorAll('.month-chip').forEach((chip) => chip.classList.toggle('active', chip.textContent === context.period));
 
@@ -3213,7 +3237,8 @@
             const filtered = applySecondaryFilters(
                 GLOBAL_DATA.filter((item) => item.periodLabel === period),
                 context.group,
-                context.vehicle
+                context.vehicle,
+                context.grade
             );
             return calcResumo(filtered).eficiencia;
         });
@@ -3221,7 +3246,8 @@
             const filtered = applySecondaryFilters(
                 GLOBAL_DATA.filter((item) => item.periodLabel === period),
                 context.group,
-                context.vehicle
+                context.vehicle,
+                context.grade
             );
             return calcResumo(filtered).notaMedia;
         });
@@ -3405,7 +3431,7 @@
         document.getElementById('ops-bottom-label').textContent = context.vehicle === 'all'
             ? `${context.period === 'all' ? 'Consolidado' : context.period} | fotografia operacional da frota`
             : `Equip. ${context.vehicle} | fotografia operacional`;
-        document.getElementById('ops-dist-label').textContent = `Frota filtrada${context.group !== 'all' ? ` | ${context.group}` : ''}`;
+        document.getElementById('ops-dist-label').textContent = `Frota filtrada${context.group !== 'all' ? ` | ${context.group}` : ''}${context.grade !== 'all' ? ` | Classe ${context.grade}` : ''}`;
         document.getElementById('ops-group-label').textContent = context.group === 'all' ? 'Leitura por operacao' : `Grupo selecionado: ${context.group}`;
         document.getElementById('detail-impact-label').textContent = `Periodo ${context.period === 'all' ? 'consolidado' : context.period}`;
         document.getElementById('detail-trend-label').textContent = 'Eficiencia e nota por mes carregado';
