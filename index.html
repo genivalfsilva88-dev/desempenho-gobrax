@@ -2410,7 +2410,17 @@
         });
         const validation = calcDataValidation(records);
         const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
-        activeVehicles.forEach((vehicle) => { distribution[vehicle.grade] += 1; });
+        const distributionDetails = { A: [], B: [], C: [], D: [], E: [] };
+        activeVehicles.forEach((vehicle) => {
+            distribution[vehicle.grade] += 1;
+            distributionDetails[vehicle.grade].push(vehicle);
+        });
+        Object.keys(distributionDetails).forEach((grade) => {
+            distributionDetails[grade].sort((a, b) => {
+                if (b.notaMedia !== a.notaMedia) return b.notaMedia - a.notaMedia;
+                return a.id.localeCompare(b.id, 'pt-BR');
+            });
+        });
         const movimentoWeight = (item) => item.tempoMovimentoHours || item.km || 1;
         const idleWeight = (item) => item.idleHours || item.tempoMovimentoHours || 1;
         const linkedWeight = (item) => (item.tempoMovimentoHours + item.idleHours) || 1;
@@ -2446,6 +2456,7 @@
             distMedia: safeDivide(km, activeVehicles.length),
             validation,
             distribution,
+            distributionDetails,
             idleHighRpmPct: weightedAverage(records, 'idleHighRpmPct', idleWeight),
             inicioFaixaPct: weightedAverage(records, 'inicioFaixaPct', movimentoWeight),
             finalFaixaPct: weightedAverage(records, 'finalFaixaPct', movimentoWeight),
@@ -3342,7 +3353,41 @@
                 labels: ['A', 'B', 'C', 'D', 'E'],
                 datasets: [{ data: ['A', 'B', 'C', 'D', 'E'].map((grade) => currentSummary.distribution[grade]), backgroundColor: ['#22c55e', '#4ade80', '#facc15', '#fb923c', '#ef4444'], borderRadius: 8 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#eef3fb' } }, x: { grid: { display: false } } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        displayColors: false,
+                        callbacks: {
+                            title: (items) => {
+                                const grade = items[0]?.label || '';
+                                const total = currentSummary.distribution[grade] || 0;
+                                return `Classe ${grade} - ${total} equipamento(s)`;
+                            },
+                            label: (item) => {
+                                const grade = item.label;
+                                const vehicles = currentSummary.distributionDetails?.[grade] || [];
+                                if (!vehicles.length) return 'Nenhum equipamento nessa faixa';
+                                return vehicles.slice(0, 12).map((vehicle) => {
+                                    const plate = vehicle.placa ? ` | ${vehicle.placa}` : '';
+                                    return `${vehicle.id}${plate} - Nota ${formatNumber(vehicle.notaMedia, 1)}`;
+                                });
+                            },
+                            afterLabel: (item) => {
+                                const grade = item.label;
+                                const vehicles = currentSummary.distributionDetails?.[grade] || [];
+                                return vehicles.length > 12 ? `+ ${vehicles.length - 12} equipamento(s)` : '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#eef3fb' } },
+                    x: { grid: { display: false } }
+                }
+            }
         });
 
         const idleImpacts = currentSummary.activeVehicleList.slice().sort((a, b) => b.idleHours - a.idleHours).slice(0, 10);
