@@ -1770,6 +1770,21 @@
         })).filter((sheet) => shouldAcceptSheet(sheet, sheet.rows));
     }
 
+    function loadBundledSheets(label = 'Base local embarcada') {
+        const bundledSheets = getBundledSheets();
+        if (!bundledSheets.length) return false;
+
+        processarWorkbook(bundledSheets, {
+            source: 'bundle',
+            generatedAt: window.GOBRAX_DATA?.generatedAt || null,
+            loadedAt: new Date().toISOString(),
+            label,
+            sheets: bundledSheets.length
+        });
+        setStatus('manual');
+        return true;
+    }
+
     function fetchSheetViaJsonp(sheet) {
         return new Promise((resolve, reject) => {
             const refLabel = sheet.gid || normalizeKey(sheet.sourceName || sheet.name) || 'sheet';
@@ -1843,19 +1858,6 @@
         setStatus('loading', 'Carregando planilha Gobrax...');
 
         try {
-            const bundledSheets = getBundledSheets();
-            if (bundledSheets.length) {
-                processarWorkbook(bundledSheets, {
-                    source: 'bundle',
-                    generatedAt: window.GOBRAX_DATA?.generatedAt || null,
-                    loadedAt: new Date().toISOString(),
-                    label: 'Base local embarcada',
-                    sheets: bundledSheets.length
-                });
-                setStatus('manual');
-                return;
-            }
-
             const results = await Promise.all(
                 SHEET_CONFIG.map(async (sheet) => {
                     try {
@@ -1882,16 +1884,18 @@
             }
 
             processarWorkbook(availableSheets, {
-                source: 'online',
+                source: 'live',
                 generatedAt: null,
                 loadedAt: new Date().toISOString(),
-                label: 'Google Sheets publicado',
+                label: 'Google Sheets ao vivo',
                 sheets: availableSheets.length
             });
             setStatus('online');
         } catch (error) {
             console.error(error);
-            setStatus('offline', 'Falha ao conectar na planilha');
+            if (!loadBundledSheets('Base local embarcada (fallback)')) {
+                setStatus('offline', 'Falha ao conectar na planilha');
+            }
         }
     }
 
