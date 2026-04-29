@@ -8,6 +8,6 @@
     "cf:build": "node scripts/prepare-pages.mjs",
     "cf:project:create": "npx wrangler pages project create desempenho-gobrax",
     "cf:dev": "npm run cf:build && npx wrangler pages dev dist",
-    "cf:deploy": "npm run sync-data && npm run cf:build && npx wrangler pages deploy dist --project-name=desempenho-gobrax"
+    "cf:deploy": "npm run sync-data && npm run cf:build && npx wrangler pages deploy dist --project-name=desempenho-gobrax --branch=main --commit-dirty=true"
   }
 }
