@@ -2110,7 +2110,10 @@
         setStatus('loading', 'Carregando planilha Gobrax...');
 
         try {
-            const results = await Promise.all(
+            const overallTimeout = new Promise((_, reject) =>
+                window.setTimeout(() => reject(new Error('Timeout geral ao carregar a planilha ao vivo')), 30000)
+            );
+            const results = await Promise.race([overallTimeout, Promise.all(
                 SHEET_CONFIG.map(async (sheet) => {
                     try {
                         const rows = await fetchSheetViaJsonp(sheet);
@@ -2127,7 +2130,7 @@
                     if (!shouldAcceptSheet(sheet, parsed.data)) return null;
                     return { name: sheet.name, sourceName: sheet.sourceName, order: sheet.order, type: sheet.type || null, rows: parsed.data };
                 })
-            );
+            )]);
 
             const availableSheets = results.filter(Boolean);
             if (!availableSheets.length) {
@@ -3710,6 +3713,10 @@
     document.getElementById('csv-input').addEventListener('change', handleLocalUpload);
     window.onload = () => {
         initializeDieselInput();
+        // Mostra imediatamente a base embarcada (sempre disponivel e atualizada no deploy);
+        // em seguida tenta atualizar ao vivo. Se o carregamento ao vivo travar ou falhar,
+        // o painel ja esta populado em vez de ficar preso em "Carregando...".
+        loadBundledSheets('Base local embarcada');
         carregarDadosOnline();
     };
 </script>
