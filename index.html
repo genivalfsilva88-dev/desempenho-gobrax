@@ -1157,6 +1157,8 @@
             <div class="card"><div class="card-label">Total KM rodado</div><div class="card-value" id="kpi-km">0 km</div><div class="card-sub" id="kpi-km-sub">No periodo selecionado</div></div>
             <div class="card"><div class="card-label">Consumo total</div><div class="card-value" id="kpi-consumo">0 L</div><div id="comp-consumo" class="comp-badge comp-neutral" style="display:none"></div><div class="card-sub">Diesel consumido</div></div>
             <div class="card"><div class="card-label">Nota media</div><div class="card-value" id="kpi-nota">0.0</div><div id="comp-nota" class="comp-badge comp-neutral" style="display:none"></div><div class="card-sub">Indice geral da frota</div></div>
+            <div class="card"><div class="card-label">Perda total (acima da meta)</div><div class="card-value" id="kpi-perda" style="color:var(--danger)">0 L</div><div class="card-sub" id="kpi-perda-sub">Diesel gasto alem do previsto</div></div>
+            <div class="card"><div class="card-label">Ganho total (abaixo da meta)</div><div class="card-value" id="kpi-ganho" style="color:var(--success)">0 L</div><div class="card-sub" id="kpi-ganho-sub">Diesel economizado frente ao previsto</div></div>
         </div>
 
         <div class="alerts-grid">
@@ -1454,6 +1456,8 @@
                             <th>Δ Meta</th>
                             <th>Perda (L)</th>
                             <th>Perda (R$)</th>
+                            <th>Ganho (L)</th>
+                            <th>Ganho (R$)</th>
                             <th>Nota</th>
                             <th>Class.</th>
                             <th>Motorista</th>
@@ -2576,6 +2580,7 @@
             const notaMedia = safeDivide(vehicle.notaTotal, vehicle.notaCount);
             const expectedConsumo = vehicle.meta > 0 ? safeDivide(vehicle.km, vehicle.meta) : 0;
             const potencialLitros = vehicle.meta > 0 ? Math.max(vehicle.consumo - expectedConsumo, 0) : 0;
+            const economiaLitros = vehicle.meta > 0 ? Math.max(expectedConsumo - vehicle.consumo, 0) : 0;
             const metaGap = vehicle.meta > 0 ? (kmlCalculado - vehicle.meta) : 0;
             const status = resolveVehicleStatus({
                 ...vehicle,
@@ -2594,6 +2599,7 @@
                 excessoPct,
                 expectedConsumo,
                 potencialLitros,
+                economiaLitros,
                 metaGap,
                 freadas100Km: safeDivide(vehicle.freadasTotal, vehicle.freadasBase),
                 grade: gradeFromScore(notaMedia),
@@ -2656,7 +2662,9 @@
         const metaHitVehicles = metaVehicles.filter((item) => item.kml >= item.meta);
         const belowMetaVehicles = metaVehicles.filter((item) => item.metaGap < 0);
         const motoristaVehicles = activeVehicles.filter((item) => item.motorista).length;
+        const aboveMetaVehicles = metaVehicles.filter((item) => item.metaGap >= 0);
         const potencialLitros = belowMetaVehicles.reduce((sum, item) => sum + item.potencialLitros, 0);
+        const ganhoLitros = metaVehicles.reduce((sum, item) => sum + (item.economiaLitros || 0), 0);
         const metaGapMedio = metaVehicles.length
             ? metaVehicles.reduce((sum, item) => sum + item.metaGap, 0) / metaVehicles.length
             : 0;
@@ -2707,6 +2715,8 @@
             metaVehicles: metaVehicles.length,
             metaHitVehicles: metaHitVehicles.length,
             belowMetaVehicles: belowMetaVehicles.length,
+            aboveMetaVehicles: aboveMetaVehicles.length,
+            ganhoLitros,
             metaAtingidaPct: safeDivide(metaHitVehicles.length, metaVehicles.length) * 100,
             metaCoveragePct: safeDivide(metaVehicles.length, activeVehicles.length) * 100,
             metaMedia,
@@ -3276,6 +3286,14 @@
             : 'Equipamentos com leitura';
         document.getElementById('kpi-km').textContent = `${formatNumber(currentSummary.km, 0)} km`;
         document.getElementById('kpi-consumo').textContent = `${formatNumber(currentSummary.consumo, 0)} L`;
+        document.getElementById('kpi-perda').textContent = `${formatNumber(currentSummary.potencialLitros, 0)} L`;
+        document.getElementById('kpi-perda-sub').textContent = currentSummary.metaVehicles > 0
+            ? `${formatCurrency(currentSummary.potencialLitros * dieselPrice)} | ${formatNumber(currentSummary.belowMetaVehicles, 0)} veiculos acima da meta`
+            : 'Cadastre metas por veiculo para calcular a perda';
+        document.getElementById('kpi-ganho').textContent = `${formatNumber(currentSummary.ganhoLitros, 0)} L`;
+        document.getElementById('kpi-ganho-sub').textContent = currentSummary.metaVehicles > 0
+            ? `${formatCurrency(currentSummary.ganhoLitros * dieselPrice)} | ${formatNumber(currentSummary.aboveMetaVehicles, 0)} veiculos abaixo da meta`
+            : 'Cadastre metas por veiculo para calcular o ganho';
         document.getElementById('kpi-eficiencia').textContent = formatNumber(currentSummary.eficiencia, 2);
         document.getElementById('kpi-nota').textContent = formatNumber(currentSummary.notaMedia, 1);
         document.getElementById('kpi-dist-media').textContent = `${formatNumber(currentSummary.distMedia, 0)} km`;
@@ -3447,9 +3465,13 @@
                 const deltaColor = vehicle.meta > 0
                     ? (vehicle.metaGap >= 0 ? 'var(--success)' : 'var(--danger)')
                     : 'var(--text-main)';
+                const dieselPrice = getDieselPrice();
                 const perdaLitros = vehicle.potencialLitros || 0;
-                const perdaReais = perdaLitros * getDieselPrice();
+                const perdaReais = perdaLitros * dieselPrice;
                 const perdaColor = perdaLitros > 0 ? 'var(--danger)' : 'var(--text-main)';
+                const ganhoLitros = vehicle.economiaLitros || 0;
+                const ganhoReais = ganhoLitros * dieselPrice;
+                const ganhoColor = ganhoLitros > 0 ? 'var(--success)' : 'var(--text-main)';
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${vehicle.id}</strong></td>
@@ -3463,6 +3485,8 @@
                         <td style="color:${deltaColor}; font-weight:700;">${vehicle.meta > 0 ? formatSigned(vehicle.metaGap, 2) : '--'}</td>
                         <td style="color:${perdaColor}; font-weight:700;">${vehicle.meta > 0 ? formatNumber(perdaLitros, 0) + ' L' : '--'}</td>
                         <td style="color:${perdaColor}; font-weight:700;">${vehicle.meta > 0 ? formatCurrency(perdaReais) : '--'}</td>
+                        <td style="color:${ganhoColor}; font-weight:700;">${vehicle.meta > 0 ? formatNumber(ganhoLitros, 0) + ' L' : '--'}</td>
+                        <td style="color:${ganhoColor}; font-weight:700;">${vehicle.meta > 0 ? formatCurrency(ganhoReais) : '--'}</td>
                         <td>${formatNumber(vehicle.notaMedia, 1)}</td>
                         <td><span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;padding:4px 8px;border-radius:999px;font-weight:800;${getGradeStyle(vehicle.grade)}">${vehicle.grade}</span></td>
                         <td>${vehicle.motorista || '-'}</td>
